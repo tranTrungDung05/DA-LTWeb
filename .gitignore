@@ -1,0 +1,31 @@
+## ======= 1. .NET Core / C# Specific =======
+bin/
+obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## ======= 2. Visual Studio =======
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+bld/
+[Log]/
+
+## ======= 3. VS Code =======
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/settings.json
+!.vscode/extensions.json
+
+## ======= 4. Docker & Local Database =======
+.db-data/
+mssql_data/
+.env
+
+## ======= 5. OS Specific (File rác của hệ điều hành) =======
+.DS_Store
+Thumbs.db

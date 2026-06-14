@@ -1,0 +1,34 @@
+@model Room
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="col-md-4">
+    <label asp-for="Code" class="form-label">Ma phong</label>
+    <input asp-for="Code" class="form-control" />
+    <span asp-validation-for="Code" class="text-danger"></span>
+</div>
+<div class="col-md-4">
+    <label asp-for="PropertyId" class="form-label">Nha tro</label>
+    <select asp-for="PropertyId" asp-items="ViewBag.PropertyId" class="form-select"></select>
+</div>
+<div class="col-md-4">
+    <label asp-for="Status" class="form-label">Trang thai</label>
+    <select asp-for="Status" asp-items="Html.GetEnumSelectList<RoomStatus>()" class="form-select"></select>
+</div>
+<div class="col-md-4">
+    <label asp-for="Area" class="form-label">Dien tich</label>
+    <input asp-for="Area" class="form-control" />
+    <span asp-validation-for="Area" class="text-danger"></span>
+</div>
+<div class="col-md-4">
+    <label asp-for="MonthlyPrice" class="form-label">Gia thang</label>
+    <input asp-for="MonthlyPrice" class="form-control" />
+    <span asp-validation-for="MonthlyPrice" class="text-danger"></span>
+</div>
+<div class="col-md-4">
+    <label asp-for="MaxOccupants" class="form-label">So nguoi toi da</label>
+    <input asp-for="MaxOccupants" class="form-control" />
+</div>
+<div class="col-12">
+    <label asp-for="Note" class="form-label">Ghi chu</label>
+    <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+</div>

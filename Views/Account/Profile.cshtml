@@ -1,0 +1,33 @@
+@model smart_hostel_management_system.Models.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "Ho so";
+}
+
+<h1 class="h3 mb-3">Ho so ca nhan</h1>
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+<form asp-action="Profile" method="post" class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="FullName" class="form-label">Ho ten</label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Email" class="form-label">Email</label>
+        <input asp-for="Email" class="form-control" readonly />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="PhoneNumber" class="form-label">So dien thoai</label>
+        <input asp-for="PhoneNumber" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Address" class="form-label">Dia chi</label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Luu ho so</button>
+        <a class="btn btn-outline-secondary" asp-action="ChangePassword">Doi mat khau</a>
+    </div>
+</form>

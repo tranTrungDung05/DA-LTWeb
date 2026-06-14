@@ -1,0 +1,19 @@
+@model Tenant
+@{
+    ViewData["Title"] = "Sua khach thue";
+}
+
+<h1 class="h3 mb-3">Sua khach thue</h1>
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="row g-3">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="DocumentPath" />
+    <partial name="_TenantForm" model="Model" />
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Luu</button>
+        <a class="btn btn-link" asp-action="Index">Quay lai</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

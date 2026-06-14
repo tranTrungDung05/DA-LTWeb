@@ -1,0 +1,66 @@
+@model Contract
+@{
+    ViewData["Title"] = "Chi tiet hop dong";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Hop dong @Model.ContractNumber</h1>
+    <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id">Sua hop dong</a>
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Phong</dt>
+    <dd class="col-sm-9">@Model.Room?.Code</dd>
+    <dt class="col-sm-3">Khach thue</dt>
+    <dd class="col-sm-9">@Model.Tenant?.FullName</dd>
+    <dt class="col-sm-3">Thoi han</dt>
+    <dd class="col-sm-9">@Model.StartDate.ToString("dd/MM/yyyy") - @Model.EndDate.ToString("dd/MM/yyyy")</dd>
+    <dt class="col-sm-3">Gia thang</dt>
+    <dd class="col-sm-9">@Model.MonthlyPrice.ToString("N0")</dd>
+    <dt class="col-sm-3">Tien coc</dt>
+    <dd class="col-sm-9">@Model.DepositAmount.ToString("N0")</dd>
+    <dt class="col-sm-3">Trang thai</dt>
+    <dd class="col-sm-9">@Model.Status</dd>
+    <dt class="col-sm-3">Ghi chu</dt>
+    <dd class="col-sm-9">@Model.Note</dd>
+</dl>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <form asp-action="Renew" method="post" class="row g-2">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <div class="col-8">
+                <input name="endDate" type="date" value="@Model.EndDate.AddMonths(6).ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="col-4">
+                <button class="btn btn-outline-primary w-100" type="submit">Gia han</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-3">
+        <form asp-action="Terminate" asp-route-id="@Model.Id" method="post">
+            <button class="btn btn-outline-warning w-100" type="submit" onclick="return confirm('Thanh ly hop dong nay?')">Thanh ly</button>
+        </form>
+    </div>
+</div>
+
+<h2 class="h5">File dinh kem</h2>
+<table class="table table-sm">
+    <thead><tr><th>Ten file</th><th>Ngay tai len</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var file in Model.Files.OrderByDescending(item => item.UploadedAt))
+    {
+        <tr>
+            <td><a href="@file.FilePath" target="_blank">@file.FileName</a></td>
+            <td>@file.UploadedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+            <td class="text-end">
+                <form asp-action="DeleteFile" method="post">
+                    <input type="hidden" name="id" value="@file.Id" />
+                    <input type="hidden" name="contractId" value="@Model.Id" />
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Xoa file</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

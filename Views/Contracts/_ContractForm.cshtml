@@ -1,0 +1,45 @@
+@model Contract
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="col-md-4">
+    <label asp-for="ContractNumber" class="form-label">So hop dong</label>
+    <input asp-for="ContractNumber" class="form-control" />
+    <span asp-validation-for="ContractNumber" class="text-danger"></span>
+</div>
+<div class="col-md-4">
+    <label asp-for="RoomId" class="form-label">Phong</label>
+    <select asp-for="RoomId" asp-items="ViewBag.RoomId" class="form-select"></select>
+</div>
+<div class="col-md-4">
+    <label asp-for="TenantId" class="form-label">Khach thue</label>
+    <select asp-for="TenantId" asp-items="ViewBag.TenantId" class="form-select"></select>
+</div>
+<div class="col-md-3">
+    <label asp-for="StartDate" class="form-label">Ngay bat dau</label>
+    <input asp-for="StartDate" type="date" class="form-control" />
+</div>
+<div class="col-md-3">
+    <label asp-for="EndDate" class="form-label">Ngay ket thuc</label>
+    <input asp-for="EndDate" type="date" class="form-control" />
+</div>
+<div class="col-md-3">
+    <label asp-for="MonthlyPrice" class="form-label">Gia thang</label>
+    <input asp-for="MonthlyPrice" class="form-control" />
+    <span asp-validation-for="MonthlyPrice" class="text-danger"></span>
+</div>
+<div class="col-md-3">
+    <label asp-for="DepositAmount" class="form-label">Tien coc</label>
+    <input asp-for="DepositAmount" class="form-control" />
+</div>
+<div class="col-md-4">
+    <label asp-for="Status" class="form-label">Trang thai</label>
+    <select asp-for="Status" asp-items="Html.GetEnumSelectList<ContractStatus>()" class="form-select"></select>
+</div>
+<div class="col-md-8">
+    <label class="form-label">File hop dong</label>
+    <input name="file" type="file" class="form-control" />
+</div>
+<div class="col-12">
+    <label asp-for="Note" class="form-label">Ghi chu</label>
+    <textarea asp-for="Note" rows="3" class="form-control"></textarea>
+</div>

@@ -1,0 +1,37 @@
+@model Tenant
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="col-md-6">
+    <label asp-for="FullName" class="form-label">Ho ten</label>
+    <input asp-for="FullName" class="form-control" />
+    <span asp-validation-for="FullName" class="text-danger"></span>
+</div>
+<div class="col-md-6">
+    <label asp-for="PhoneNumber" class="form-label">So dien thoai</label>
+    <input asp-for="PhoneNumber" class="form-control" />
+    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+</div>
+<div class="col-md-6">
+    <label asp-for="Email" class="form-label">Email</label>
+    <input asp-for="Email" class="form-control" />
+</div>
+<div class="col-md-6">
+    <label asp-for="IdentityNumber" class="form-label">CCCD/CMND</label>
+    <input asp-for="IdentityNumber" class="form-control" />
+</div>
+<div class="col-md-6">
+    <label asp-for="DateOfBirth" class="form-label">Ngay sinh</label>
+    <input asp-for="DateOfBirth" type="date" class="form-control" />
+</div>
+<div class="col-md-6">
+    <label asp-for="Status" class="form-label">Trang thai</label>
+    <select asp-for="Status" asp-items="Html.GetEnumSelectList<TenantStatus>()" class="form-select"></select>
+</div>
+<div class="col-md-8">
+    <label asp-for="PermanentAddress" class="form-label">Dia chi thuong tru</label>
+    <input asp-for="PermanentAddress" class="form-control" />
+</div>
+<div class="col-md-4">
+    <label class="form-label">Giay to dien tu</label>
+    <input name="document" type="file" class="form-control" />
+</div>

@@ -1,0 +1,65 @@
+@model Room
+@{
+    ViewData["Title"] = "Chi tiet phong";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Phong @Model.Code</h1>
+    <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id">Sua phong</a>
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Nha tro</dt>
+    <dd class="col-sm-9">@Model.Property?.Name</dd>
+    <dt class="col-sm-3">Gia thang</dt>
+    <dd class="col-sm-9">@Model.MonthlyPrice.ToString("N0")</dd>
+    <dt class="col-sm-3">Trang thai</dt>
+    <dd class="col-sm-9">@Model.Status</dd>
+    <dt class="col-sm-3">Ghi chu</dt>
+    <dd class="col-sm-9">@Model.Note</dd>
+</dl>
+
+<h2 class="h5 mt-4">Tai san trong phong</h2>
+<form asp-action="AddAsset" method="post" class="row g-2 mb-3">
+    <input type="hidden" name="roomId" value="@Model.Id" />
+    <div class="col-md-4"><input class="form-control" name="name" placeholder="Ten tai san" /></div>
+    <div class="col-md-2"><input class="form-control" name="quantity" type="number" value="1" min="1" /></div>
+    <div class="col-md-4"><input class="form-control" name="condition" placeholder="Tinh trang" /></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Them</button></div>
+</form>
+<table class="table table-sm">
+    <thead><tr><th>Ten</th><th>So luong</th><th>Tinh trang</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var asset in Model.Assets)
+    {
+        <tr>
+            <td>@asset.Name</td>
+            <td>@asset.Quantity</td>
+            <td>@asset.Condition</td>
+            <td class="text-end">
+                <form asp-action="DeleteAsset" method="post">
+                    <input type="hidden" name="id" value="@asset.Id" />
+                    <input type="hidden" name="roomId" value="@Model.Id" />
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Xoa</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h2 class="h5 mt-4">Lich su khach thue</h2>
+<table class="table table-sm">
+    <thead><tr><th>Khach thue</th><th>Ngay vao</th><th>Ngay ra</th><th>Hien tai</th></tr></thead>
+    <tbody>
+    @foreach (var item in Model.TenantRooms.OrderByDescending(item => item.MoveInDate))
+    {
+        <tr>
+            <td>@item.Tenant?.FullName</td>
+            <td>@item.MoveInDate.ToString("dd/MM/yyyy")</td>
+            <td>@item.MoveOutDate?.ToString("dd/MM/yyyy")</td>
+            <td>@(item.IsCurrent ? "Co" : "Khong")</td>
+        </tr>
+    }
+    </tbody>
+</table>

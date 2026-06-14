@@ -1,0 +1,41 @@
+@model smart_hostel_management_system.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Dang ky";
+}
+
+<h1 class="h3 mb-3">Dang ky tai khoan chu tro</h1>
+<form asp-action="Register" method="post" class="row g-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="col-md-6">
+        <label asp-for="FullName" class="form-label">Ho ten</label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Email" class="form-label">Email</label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="PhoneNumber" class="form-label">So dien thoai</label>
+        <input asp-for="PhoneNumber" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Password" class="form-label">Mat khau</label>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ConfirmPassword" class="form-label">Nhap lai mat khau</label>
+        <input asp-for="ConfirmPassword" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Dang ky</button>
+        <a class="btn btn-link" asp-action="Login">Da co tai khoan</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,18 @@
+@model Contract
+@{
+    ViewData["Title"] = "Sua hop dong";
+}
+
+<h1 class="h3 mb-3">Sua hop dong</h1>
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="row g-3">
+    <input type="hidden" asp-for="Id" />
+    <partial name="_ContractForm" model="Model" />
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Luu</button>
+        <a class="btn btn-link" asp-action="Index">Quay lai</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

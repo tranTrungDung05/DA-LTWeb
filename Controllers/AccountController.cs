@@ -1,12 +1,6 @@
-using System.Security.Claims;
-using System.Security.Cryptography;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using smart_hostel_management_system.Data;
 using smart_hostel_management_system.Models.Core;
 using smart_hostel_management_system.Models.ViewModels;
 
@@ -14,12 +8,13 @@ namespace smart_hostel_management_system.Controllers;
 
 public class AccountController : Controller
 {
-    private readonly AppDbContext _context;
-    private readonly PasswordHasher<AppUser> _passwordHasher = new();
+    private readonly UserManager<AppUser> _userManager;
+    private readonly SignInManager<AppUser> _signInManager;
 
-    public AccountController(AppDbContext context)
+    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
     {
-        _context = context;
+        _userManager = userManager;
+        _signInManager = signInManager;
     }
 
     [AllowAnonymous]
@@ -37,25 +32,24 @@ public class AccountController : Controller
         }
 
         var email = model.Email.Trim().ToLowerInvariant();
-        if (await _context.Users.AnyAsync(user => user.Email == email))
-        {
-            ModelState.AddModelError(nameof(model.Email), "Email nay da duoc su dung.");
-            return View(model);
-        }
-
-        var ownerRole = await _context.Roles.FirstAsync(role => role.Name == "Owner");
         var user = new AppUser
         {
             FullName = model.FullName.Trim(),
+            UserName = email,
             Email = email,
             PhoneNumber = model.PhoneNumber,
-            RoleId = ownerRole.Id
+            IsActive = true
         };
-        user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        await SignInAsync(user, ownerRole.Name, false);
+        var result = await _userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
+        {
+            AddIdentityErrors(result);
+            return View(model);
+        }
+
+        await _userManager.AddToRoleAsync(user, "Owner");
+        await _signInManager.SignInAsync(user, isPersistent: false);
 
         return RedirectToAction("Index", "Rooms");
     }
@@ -77,23 +71,27 @@ public class AccountController : Controller
         }
 
         var email = model.Email.Trim().ToLowerInvariant();
-        var user = await _context.Users.Include(item => item.Role)
-            .FirstOrDefaultAsync(item => item.Email == email);
-
-        if (user is null || !user.IsActive || _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.Password) == PasswordVerificationResult.Failed)
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null || !user.IsActive)
         {
             ModelState.AddModelError(string.Empty, "Email hoac mat khau khong dung.");
             return View(model);
         }
 
-        await SignInAsync(user, user.Role?.Name ?? "Owner", model.RememberMe);
+        var result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, lockoutOnFailure: false);
+        if (!result.Succeeded)
+        {
+            ModelState.AddModelError(string.Empty, "Email hoac mat khau khong dung.");
+            return View(model);
+        }
+
         return LocalRedirect(returnUrl ?? Url.Action("Index", "Rooms")!);
     }
 
     [Authorize]
     public async Task<IActionResult> Profile()
     {
-        var user = await CurrentUserAsync();
+        var user = await _userManager.GetUserAsync(User);
         if (user is null)
         {
             return Challenge();
@@ -102,7 +100,7 @@ public class AccountController : Controller
         return View(new ProfileViewModel
         {
             FullName = user.FullName,
-            Email = user.Email,
+            Email = user.Email ?? string.Empty,
             PhoneNumber = user.PhoneNumber,
             Address = user.Address
         });
@@ -116,7 +114,7 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var user = await CurrentUserAsync();
+        var user = await _userManager.GetUserAsync(User);
         if (user is null)
         {
             return Challenge();
@@ -125,7 +123,13 @@ public class AccountController : Controller
         user.FullName = model.FullName.Trim();
         user.PhoneNumber = model.PhoneNumber;
         user.Address = model.Address;
-        await _context.SaveChangesAsync();
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            AddIdentityErrors(result);
+            return View(model);
+        }
 
         TempData["Success"] = "Da cap nhat ho so.";
         return RedirectToAction(nameof(Profile));
@@ -146,20 +150,11 @@ public class AccountController : Controller
         }
 
         var email = model.Email.Trim().ToLowerInvariant();
-        var user = await _context.Users.FirstOrDefaultAsync(item => item.Email == email && item.IsActive);
-        if (user is not null)
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is not null && user.IsActive)
         {
-            var resetToken = new PasswordResetToken
-            {
-                UserId = user.Id,
-                Token = CreateSecureToken(),
-                ExpiresAt = DateTime.UtcNow.AddMinutes(30)
-            };
-
-            _context.PasswordResetTokens.Add(resetToken);
-            await _context.SaveChangesAsync();
-
-            TempData["ResetLink"] = Url.Action(nameof(ResetPassword), "Account", new { token = resetToken.Token }, Request.Scheme);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            TempData["ResetLink"] = Url.Action(nameof(ResetPassword), "Account", new { email, token }, Request.Scheme);
         }
 
         TempData["Success"] = "Neu email ton tai, he thong da tao lien ket dat lai mat khau.";
@@ -167,16 +162,16 @@ public class AccountController : Controller
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> ResetPassword(string token)
+    public async Task<IActionResult> ResetPassword(string email, string token)
     {
-        var resetToken = await ValidResetTokenQuery(token).FirstOrDefaultAsync();
-        if (resetToken is null)
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null || !user.IsActive || string.IsNullOrWhiteSpace(token))
         {
-            TempData["Success"] = "Lien ket dat lai mat khau khong hop le hoac da het han.";
+            TempData["Success"] = "Lien ket dat lai mat khau khong hop le.";
             return RedirectToAction(nameof(ForgotPassword));
         }
 
-        return View(new ResetPasswordViewModel { Token = token });
+        return View(new ResetPasswordViewModel { Email = email, Token = token });
     }
 
     [HttpPost, ValidateAntiForgeryToken, AllowAnonymous]
@@ -187,19 +182,19 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var resetToken = await ValidResetTokenQuery(model.Token)
-            .Include(item => item.User)
-            .FirstOrDefaultAsync();
-
-        if (resetToken?.User is null)
+        var user = await _userManager.FindByEmailAsync(model.Email.Trim().ToLowerInvariant());
+        if (user is null || !user.IsActive)
         {
-            ModelState.AddModelError(string.Empty, "Lien ket dat lai mat khau khong hop le hoac da het han.");
+            ModelState.AddModelError(string.Empty, "Lien ket dat lai mat khau khong hop le.");
             return View(model);
         }
 
-        resetToken.User.PasswordHash = _passwordHasher.HashPassword(resetToken.User, model.NewPassword);
-        resetToken.UsedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+        if (!result.Succeeded)
+        {
+            AddIdentityErrors(result);
+            return View(model);
+        }
 
         TempData["Success"] = "Da dat lai mat khau. Ban co the dang nhap lai.";
         return RedirectToAction(nameof(Login));
@@ -219,21 +214,20 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var user = await CurrentUserAsync();
+        var user = await _userManager.GetUserAsync(User);
         if (user is null)
         {
             return Challenge();
         }
 
-        if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, model.CurrentPassword) == PasswordVerificationResult.Failed)
+        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        if (!result.Succeeded)
         {
-            ModelState.AddModelError(nameof(model.CurrentPassword), "Mat khau hien tai khong dung.");
+            AddIdentityErrors(result);
             return View(model);
         }
 
-        user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
-        await _context.SaveChangesAsync();
-
+        await _signInManager.RefreshSignInAsync(user);
         TempData["Success"] = "Da doi mat khau.";
         return RedirectToAction(nameof(Profile));
     }
@@ -241,46 +235,15 @@ public class AccountController : Controller
     [HttpPost, ValidateAntiForgeryToken, Authorize]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await _signInManager.SignOutAsync();
         return RedirectToAction(nameof(Login));
     }
 
-    private async Task<AppUser?> CurrentUserAsync()
+    private void AddIdentityErrors(IdentityResult result)
     {
-        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return int.TryParse(id, out var userId)
-            ? await _context.Users.FindAsync(userId)
-            : null;
-    }
-
-    private async Task SignInAsync(AppUser user, string roleName, bool rememberMe)
-    {
-        var claims = new List<Claim>
+        foreach (var error in result.Errors)
         {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.FullName),
-            new(ClaimTypes.Email, user.Email),
-            new(ClaimTypes.Role, roleName)
-        };
-
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(identity),
-            new AuthenticationProperties { IsPersistent = rememberMe });
-    }
-
-    private IQueryable<PasswordResetToken> ValidResetTokenQuery(string token)
-    {
-        return _context.PasswordResetTokens
-            .Where(item => item.Token == token && item.UsedAt == null && item.ExpiresAt > DateTime.UtcNow);
-    }
-
-    private static string CreateSecureToken()
-    {
-        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
-            .Replace("+", "-", StringComparison.Ordinal)
-            .Replace("/", "_", StringComparison.Ordinal)
-            .TrimEnd('=');
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
     }
 }

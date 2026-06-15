@@ -1,16 +1,15 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using smart_hostel_management_system.Models.Core;
 
 namespace smart_hostel_management_system.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<AppUser, Role, int>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
 
-    public DbSet<AppUser> Users => Set<AppUser>();
-    public DbSet<Role> Roles => Set<Role>();
     public DbSet<Property> Properties => Set<Property>();
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<RoomAsset> RoomAssets => Set<RoomAsset>();
@@ -18,19 +17,10 @@ public class AppDbContext : DbContext
     public DbSet<TenantRoom> TenantRooms => Set<TenantRoom>();
     public DbSet<Contract> Contracts => Set<Contract>();
     public DbSet<ContractFile> ContractFiles => Set<ContractFile>();
-    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<AppUser>()
-            .HasIndex(user => user.Email)
-            .IsUnique();
-
-        modelBuilder.Entity<Role>()
-            .HasIndex(role => role.Name)
-            .IsUnique();
 
         modelBuilder.Entity<Room>()
             .HasIndex(room => room.Code)
@@ -39,16 +29,6 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Contract>()
             .HasIndex(contract => contract.ContractNumber)
             .IsUnique();
-
-        modelBuilder.Entity<PasswordResetToken>()
-            .HasIndex(resetToken => resetToken.Token)
-            .IsUnique();
-
-        modelBuilder.Entity<AppUser>()
-            .HasMany<PasswordResetToken>()
-            .WithOne(resetToken => resetToken.User)
-            .HasForeignKey(resetToken => resetToken.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Property>()
             .HasMany(property => property.Rooms)
@@ -93,9 +73,9 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Role>().HasData(
-            new Role { Id = 1, Name = "Owner", Description = "Chu tro" },
-            new Role { Id = 2, Name = "Tenant", Description = "Khach thue" },
-            new Role { Id = 3, Name = "Admin", Description = "Quan tri he thong" });
+            new Role { Id = 1, Name = "Owner", NormalizedName = "OWNER", Description = "Chu tro" },
+            new Role { Id = 2, Name = "Tenant", NormalizedName = "TENANT", Description = "Khach thue" },
+            new Role { Id = 3, Name = "Admin", NormalizedName = "ADMIN", Description = "Quan tri he thong" });
 
         modelBuilder.Entity<Property>().HasData(
             new Property

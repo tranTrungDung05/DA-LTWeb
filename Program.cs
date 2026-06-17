@@ -1,7 +1,22 @@
+using Microsoft.EntityFrameworkCore;
+using smart_hostel_management_system.Data;
+using smart_hostel_management_system.Features.HoaDonModule; // Bổ sung namespace này
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// =================================================================================
+// BỔ SUNG: ĐĂNG KÝ AUTOMAPPER VÀ DI CHO MODULE HOA DON
+// =================================================================================
+builder.Services.AddAutoMapper(typeof(smart_hostel_management_system.DTOs.MappingProfile));
+builder.Services.AddScoped<IHoaDonRepository, HoaDonRepository>();
+builder.Services.AddScoped<IHoaDonService, HoaDonService>();
+// =================================================================================
 
 var app = builder.Build();
 
@@ -14,7 +29,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(); // Đã có sẵn để kích hoạt file hoadon-test.html trong wwwroot
 
 app.UseRouting();
 

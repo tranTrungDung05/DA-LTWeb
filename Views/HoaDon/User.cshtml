@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hóa Đơn Của Tôi</title>
+    <style>
+        .hd-container { max-width: 1000px; margin: 30px auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .hd-title { color: #27ae60; border-bottom: 3px solid #27ae60; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        .hd-layout { display: flex; gap: 30px; }
+        .hd-left { flex: 6; }
+        .hd-right { flex: 4; }
+
+        .filter-bar { margin-bottom: 15px; display: flex; gap: 10px; }
+        .btn-hd { border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; transition: 0.2s; }
+        .btn-default { background-color: #bdc3c7; color: #333; }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-success { background-color: #2ecc71; color: white; }
+
+        .hd-table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .hd-table th, .hd-table td { border: 1px solid #ddd; padding: 10px; font-size: 14px; }
+        .hd-table th { background-color: #f8f9fa; }
+        .hd-table tbody tr { cursor: pointer; }
+        .hd-table tbody tr:hover { background-color: #f1f2f6; }
+
+        .status-chua-thanh-toan { color: #e74c3c; font-weight: bold; } /* Đỏ */
+        .status-da-thanh-toan { color: #2ecc71; font-weight: bold; } /* Xanh */
+
+        .detail-box { display: none; background: #fff; border: 2px solid #27ae60; border-radius: 8px; padding: 15px; }
+        .fee-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
+        .fee-total { font-size: 16px; font-weight: bold; color: #e74c3c; padding-top: 10px; }
+        .qr-zone { display: none; text-align: center; margin-top: 15px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; }
+        .qr-img { width: 100%; height: 180px; background-color: #34495e; color: white; display: inline-block; line-height: 180px; font-weight: bold; margin-top: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="hd-container">
+    <h1 class="hd-title">👤 HÓA ĐƠN & CHI PHÍ KHÁCH THUÊ</h1>
+    
+    <div class="hd-layout">
+        <div class="hd-left">
+            <div class="filter-bar">
+                <button class="btn-hd btn-primary" id="btnFilterChua" onclick="loadUserTable('ChuaThanhToan')">Chưa thanh toán</button>
+                <button class="btn-hd btn-default" id="btnFilterDa" onclick="loadUserTable('DaThanhToan')">Đã thanh toán</button>
+                <button class="btn-hd btn-default" id="btnFilterAll" onclick="loadUserTable('TatCa')">Tất cả</button>
+            </div>
+
+            <table class="hd-table">
+                <thead>
+                    <tr>
+                        <th>Kỳ Hóa Đơn</th>
+                        <th>Phòng</th>
+                        <th>Tổng Tiền</th>
+                        <th>Trạng Thái</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="hd-right">
+            <div class="detail-box" id="detailBox">
+                <h3 style="margin-top: 0; color: #2c3e50;">🔍 Chi Tiết Hóa Đơn</h3>
+                <div class="fee-item"><span>🏠 Tiền phòng cơ bản:</span><span id="lblRoom" style="font-weight: bold;">0đ</span></div>
+                <div class="fee-item"><span>⚡ Tiền điện tiêu thụ:</span><span id="lblElectric">0đ</span></div>
+                <div class="fee-item"><span>💧 Tiền nước sinh hoạt:</span><span id="lblWater">0đ</span></div>
+                <div class="fee-item"><span>🗑️ Tiền rác cố định:</span><span id="lblTrash">0đ</span></div>
+                <div class="fee-item fee-total"><span>Tổng thanh toán:</span><span id="lblTotal">0đ</span></div>
+
+                <div id="payActionZone" style="margin-top: 15px; text-align: right;">
+                    <button class="btn-hd btn-success" onclick="openQR()">Thanh Toán Qua Mã QR</button>
+                </div>
+
+                <div class="qr-zone" id="qrZone">
+                    <p style="color: #c0392b; font-weight: bold; margin: 0; font-size: 12px;">Mở App Ngân Hàng quét mã VietQR tự động:</p>
+                    <div class="qr-img">📲 VIETQR BANKING MOCK</div>
+                    <p style="font-size: 11px; color: gray; margin-top: 5px;">Hệ thống không tiếp nhận thanh toán bằng tiền mặt.</p>
+                    <button class="btn-hd btn-default" style="font-size: 12px; margin-top: 5px; width: 100%;" onclick="executePayment()">Xác nhận đã chuyển khoản thành công</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. GIẢ LẬP TRẠNG THÁI TÀI KHOẢN ĐANG ĐĂNG NHẬP ĐỂ TEST 2 KỊCH BẢN
+    // Kịch bản A (Người đại diện): id: 10, name: "Nguyen Van Thang", isRepresentative: true
+    // Kịch bản B (Thành viên ở ghép): id: 11, name: "Hoang Manh Hung", isRepresentative: false
+    const currentLoggedInUser = {
+        id: 11, // Bạn có thể đổi thành 10 hoặc 11 để test giao diện đổi trạng thái nút bấm
+        name: "Hoang Manh Hung",
+        isRepresentative: false // true: Hiện nút thanh toán | false: Ẩn nút, hiện tên trưởng phòng
+    };
+
+    // Dữ liệu hóa đơn phòng (Lưu ý bổ sung thêm thông tin người đại diện)
+    const rawData = [
+        { 
+            id: 1, month: 6, year: 2026, roomId: 101, roomCode: "P101", 
+            representativeName: "Nguyen Van Thang", // Tên người đại diện của phòng này
+            roomPrice: 3500000, electricityPrice: 180000, waterPrice: 60000, trashPrice: 20000,
+            total: 3760000, status: "ChuaThanhToan" 
+        }
+    ];
+
+    // Lưu vào LocalStorage nếu chưa có để đồng bộ với Admin
+    if (!localStorage.getItem('sharedInvoices')) {
+        localStorage.setItem('sharedInvoices', JSON.stringify(rawData));
+    }
+
+    let selectedInvoice = null;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        loadUserTable('ChuaThanhToan');
+    });
+
+    function loadUserTable(filterType) {
+        document.getElementById('detailBox').style.display = 'none';
+        document.getElementById('qrZone').style.display = 'none';
+        
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = '';
+
+        let allInvoices = JSON.parse(localStorage.getItem('sharedInvoices')) || [];
+        
+        // Vì ở ghép cùng phòng nên tất cả thành viên phòng 101 đều nhìn thấy hóa đơn phòng 101
+        // (Sau này Backend sẽ dựa vào RoomId của User để trả về đúng hóa đơn phòng đó)
+        let filtered = [];
+        if (filterType === 'ChuaThanhToan') {
+            filtered = allInvoices.filter(x => x.status === 'ChuaThanhToan');
+        } else if (filterType === 'DaThanhToan') {
+            filtered = allInvoices.filter(x => x.status === 'DaThanhToan');
+        } else {
+            filtered = allInvoices;
+        }
+
+        filtered.forEach(item => {
+            const tr = document.createElement('tr');
+            const statusText = item.status === 'ChuaThanhToan' ? 'Chưa Thanh Toán' : 'Đã Thanh Toán';
+            const statusClass = item.status === 'ChuaThanhToan' ? 'status-chua-thanh-toan' : 'status-da-thanh-toan';
+
+            tr.innerHTML = `
+                <td>Tháng ${item.month}/${item.year}</td>
+                <td><strong>${item.roomCode}</strong></td>
+                <td>${item.total.toLocaleString()}đ</td>
+                <td><span class="${statusClass}">${statusText}</span></td>
+            `;
+            tr.onclick = () => showDetail(item);
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ⚡ 2. HÀM XỬ LÝ ẨN/HIỆN NÚT THANH TOÁN THEO QUYỀN ĐẠI DIỆN
+    function showDetail(invoice) {
+        selectedInvoice = invoice;
+        document.getElementById('detailBox').style.display = 'block';
+        document.getElementById('qrZone').style.display = 'none';
+
+        document.getElementById('lblRoom').innerText = invoice.roomPrice.toLocaleString() + "đ";
+        document.getElementById('lblElectric').innerText = invoice.electricityPrice.toLocaleString() + "đ";
+        document.getElementById('lblWater').innerText = invoice.waterPrice.toLocaleString() + "đ";
+        document.getElementById('lblTrash').innerText = invoice.trashPrice.toLocaleString() + "đ";
+        document.getElementById('lblTotal').innerText = invoice.total.toLocaleString() + "đ";
+
+        const actionZone = document.getElementById('payActionZone');
+
+        // BƯỚC THUẬT TOÁN KIỂM TRA QUYỀN ĐẠI DIỆN:
+        if (invoice.status === 'DaThanhToan') {
+            actionZone.innerHTML = `<span style="color: #2ecc71; font-weight: bold;">Hóa đơn này đã được thanh toán hoàn tất.</span>`;
+        } else {
+            // Nếu hóa đơn CHƯA THANH TOÁN, kiểm tra xem user đang đăng nhập có phải đại diện không
+            if (currentLoggedInUser.isRepresentative) {
+                // Nếu đúng là trưởng phòng -> Hiện nút bấm quét mã QR đóng tiền
+                actionZone.innerHTML = `<button class="btn-hd btn-success" onclick="openQR()">Thanh Toán Qua Mã QR</button>`;
+            } else {
+                // Nếu chỉ là thành viên ở ghép -> Ẩn nút, hiển thị thông báo tên người đại diện
+                actionZone.innerHTML = `
+                    <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; font-size: 13px; border: 1px solid #ffeeba; text-align: left;">
+                        ℹ️ Bạn không phải người đại diện phòng. Vui lòng liên hệ trưởng phòng 
+                        <strong>${invoice.representativeName}</strong> để tiến hành thanh toán hóa đơn này.
+                    </div>`;
+            }
+        }
+    }
+
+    function openQR() {
+        document.getElementById('qrZone').style.display = 'block';
+    }
+
+    async function executePayment() {
+        if (!selectedInvoice) return;
+        try {
+            const response = await fetch(`/api/HoaDon/thanh-toan/${selectedInvoice.roomId}?phuongThuc=ChuyenKhoanQR`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+
+            const db = JSON.parse(localStorage.getItem('sharedInvoices'));
+            const target = db.find(x => x.id === selectedInvoice.id);
+            if (target) target.status = 'DaThanhToan';
+            localStorage.setItem('sharedInvoices', JSON.stringify(db));
+
+            alert(data.message);
+            loadUserTable('DaThanhToan');
+        } catch (error) {
+            console.error("Lỗi kết nối API:", error);
+        }
+    }
+</script>
+</body>
+</html>

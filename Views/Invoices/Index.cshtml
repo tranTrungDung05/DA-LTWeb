@@ -1,0 +1,54 @@
+@model IEnumerable<smart_hostel_management_system.Models.Core.Invoice>
+@{
+    ViewData["Title"] = "Quản lý hóa đơn";
+}
+
+<h2 class="mb-3">Quản lý hóa đơn</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Mã hóa đơn</th>
+                <th>Kỳ</th>
+                <th>Cư dân</th>
+                <th>Phòng</th>
+                <th>Tổng tiền</th>
+                <th>Phát hành</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var invoice in Model)
+            {
+                <tr>
+                    <td>@invoice.InvoiceNumber</td>
+                    <td>@invoice.Month/@invoice.Year</td>
+                    <td>@invoice.Tenant?.FullName</td>
+                    <td>@invoice.Room?.RoomNumber</td>
+                    <td>@invoice.TotalAmount.ToString("N0") đ</td>
+                    <td>@(invoice.IsPublished ? $"Đã phát hành {invoice.PublishedAt:dd/MM/yyyy HH:mm}" : "Bản nháp")</td>
+                    <td class="text-nowrap">
+                        <a asp-action="Details" asp-route-id="@invoice.Id" class="btn btn-sm btn-outline-secondary">Xem</a>
+                        @if (!invoice.IsPublished)
+                        {
+                            <a asp-action="Edit" asp-route-id="@invoice.Id" class="btn btn-sm btn-outline-primary">Nhập dịch vụ</a>
+                            <form asp-action="Publish" asp-route-id="@invoice.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success">Public</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

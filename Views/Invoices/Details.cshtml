@@ -1,0 +1,53 @@
+@model smart_hostel_management_system.Models.Core.Invoice
+@{
+    ViewData["Title"] = "Chi tiết hóa đơn";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <div>
+                <h2>Hóa đơn @Model.InvoiceNumber</h2>
+                <p class="mb-1">Cư dân: @Model.Tenant?.FullName</p>
+                <p>Phòng: @Model.Room?.RoomNumber · Kỳ @Model.Month/@Model.Year</p>
+            </div>
+            <div class="text-end">
+                <p>Ngày lập: @Model.IssueDate.ToString("dd/MM/yyyy")</p>
+                <p>Hạn thanh toán: @Model.DueDate.ToString("dd/MM/yyyy")</p>
+            </div>
+        </div>
+
+        <p>@Model.MainContent</p>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Dịch vụ</th>
+                    <th>Đơn vị</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var detail in Model.InvoiceDetails)
+                {
+                    <tr>
+                        <td>@detail.Service?.Name</td>
+                        <td>@detail.Unit</td>
+                        <td>@detail.Quantity</td>
+                        <td>@detail.UnitPrice.ToString("N0") đ</td>
+                        <td>@detail.SubTotal.ToString("N0") đ</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4" class="text-end">Tổng cộng</th>
+                    <th>@Model.TotalAmount.ToString("N0") đ</th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <a asp-action="@(User.IsInRole("Admin") ? "Index" : "MyInvoices")" class="btn btn-secondary">Quay lại</a>
+    </div>
+</div>

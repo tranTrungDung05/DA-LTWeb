@@ -1,0 +1,43 @@
+@model IEnumerable<smart_hostel_management_system.Models.Core.Invoice>
+@{
+    ViewData["Title"] = "Hóa đơn của tôi";
+}
+
+<h2 class="mb-3">Hóa đơn của tôi</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Chưa có hóa đơn nào được phát hành cho tài khoản này.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Mã hóa đơn</th>
+                    <th>Kỳ</th>
+                    <th>Phòng</th>
+                    <th>Tổng tiền</th>
+                    <th>Hạn thanh toán</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var invoice in Model)
+                {
+                    <tr>
+                        <td>@invoice.InvoiceNumber</td>
+                        <td>@invoice.Month/@invoice.Year</td>
+                        <td>@invoice.Room?.RoomNumber</td>
+                        <td>@invoice.TotalAmount.ToString("N0") đ</td>
+                        <td>@invoice.DueDate.ToString("dd/MM/yyyy")</td>
+                        <td>@invoice.Status</td>
+                        <td><a asp-action="Details" asp-route-id="@invoice.Id" class="btn btn-sm btn-outline-primary">Xem chi tiết</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

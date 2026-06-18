@@ -5,8 +5,8 @@
 <div class="row">
     <div class="col-md-6 mb-3">
         <label asp-for="ContractNumber" class="form-label">Mã hợp đồng</label>
-        <input asp-for="ContractNumber" class="form-control" />
-        <span asp-validation-for="ContractNumber" class="text-danger"></span>
+        <input asp-for="ContractNumber" type="hidden" />
+        <input value="@(Model.Id == 0 ? "Tự động khi lưu" : Model.ContractNumber)" class="form-control" readonly />
     </div>
     <div class="col-md-6 mb-3">
         <label asp-for="Date" class="form-label">Ngày lập</label>

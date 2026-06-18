@@ -50,7 +50,7 @@ namespace smart_hostel_management_system.Controllers
 
             var contract = new Contract
             {
-                ContractNumber = model.ContractNumber.Trim(),
+                ContractNumber = await GenerateContractNumber(model.Date),
                 Date = model.Date,
                 Status = model.Status,
                 TenantId = model.TenantId,
@@ -129,7 +129,6 @@ namespace smart_hostel_management_system.Controllers
                 return NotFound();
             }
 
-            contract.ContractNumber = model.ContractNumber.Trim();
             contract.Date = model.Date;
             contract.Status = model.Status;
             contract.TenantId = model.TenantId;
@@ -192,18 +191,6 @@ namespace smart_hostel_management_system.Controllers
 
         private async Task ValidateContract(ContractFormViewModel model)
         {
-            model.ContractNumber = model.ContractNumber.Trim();
-
-            if (string.IsNullOrWhiteSpace(model.ContractNumber))
-            {
-                ModelState.AddModelError(nameof(model.ContractNumber), "Vui lòng nhập mã hợp đồng.");
-            }
-            else if (await _context.Contracts.AnyAsync(c =>
-                         c.ContractNumber == model.ContractNumber && c.Id != model.Id))
-            {
-                ModelState.AddModelError(nameof(model.ContractNumber), "Mã hợp đồng đã tồn tại.");
-            }
-
             if (!await _context.Tenants.AnyAsync(t => t.Id == model.TenantId))
             {
                 ModelState.AddModelError(nameof(model.TenantId), "Vui lòng chọn cư dân.");
@@ -218,6 +205,23 @@ namespace smart_hostel_management_system.Controllers
             {
                 ModelState.AddModelError(nameof(model.EndDate), "Ngày kết thúc phải từ ngày bắt đầu trở đi.");
             }
+        }
+
+        private async Task<string> GenerateContractNumber(DateTime date)
+        {
+            var prefix = $"HD-{date:yyyyMMdd}-";
+            var existingNumbers = await _context.Contracts
+                .AsNoTracking()
+                .Where(c => c.ContractNumber.StartsWith(prefix))
+                .Select(c => c.ContractNumber)
+                .ToListAsync();
+
+            var nextNumber = existingNumbers
+                .Select(number => int.TryParse(number[prefix.Length..], out var sequence) ? sequence : 0)
+                .DefaultIfEmpty()
+                .Max() + 1;
+
+            return $"{prefix}{nextNumber:D3}";
         }
 
         private async Task LoadSelections(int? tenantId = null, int? roomId = null)

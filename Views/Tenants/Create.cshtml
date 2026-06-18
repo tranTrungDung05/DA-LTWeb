@@ -1,0 +1,13 @@
+@model smart_hostel_management_system.Models.Core.Tenant
+@{
+    ViewData["Title"] = "Thêm cư dân";
+}
+
+<h2>Thêm cư dân</h2>
+<form asp-action="Create" method="post" class="card card-body">
+    <partial name="_Form" model="Model" />
+    <div>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </div>
+</form>

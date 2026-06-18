@@ -1,0 +1,49 @@
+@model IEnumerable<smart_hostel_management_system.Models.Core.Tenant>
+@{
+    ViewData["Title"] = "Quản lý cư dân";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Quản lý cư dân</h2>
+    <a asp-action="Create" class="btn btn-primary">Thêm cư dân</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Họ tên</th>
+                <th>CCCD/CMND</th>
+                <th>Điện thoại</th>
+                <th>Email</th>
+                <th>Trạng thái</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tenant in Model)
+            {
+                <tr>
+                    <td>@tenant.FullName</td>
+                    <td>@tenant.IdentityNumber</td>
+                    <td>@tenant.Phone</td>
+                    <td>@tenant.Email</td>
+                    <td>@tenant.Status</td>
+                    <td class="text-nowrap">
+                        <a asp-action="Edit" asp-route-id="@tenant.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@tenant.Id" class="btn btn-sm btn-outline-danger">Xóa</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

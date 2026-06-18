@@ -1,0 +1,43 @@
+@model smart_hostel_management_system.Models.Core.Tenant
+@using smart_hostel_management_system.Models.Enums
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="FullName" class="form-label">Họ tên</label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="IdentityNumber" class="form-label">CCCD/CMND</label>
+        <input asp-for="IdentityNumber" class="form-control" />
+        <span asp-validation-for="IdentityNumber" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="Phone" class="form-label">Điện thoại</label>
+        <input asp-for="Phone" class="form-control" />
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="Email" class="form-label">Email</label>
+        <input asp-for="Email" type="email" class="form-control" />
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="DateOfBirth" class="form-label">Ngày sinh</label>
+        <input asp-for="DateOfBirth" type="date" class="form-control" />
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="Status" class="form-label">Trạng thái</label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<TenantStatus>()" class="form-select"></select>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="AccountId" class="form-label">Tài khoản nhận hóa đơn</label>
+        <select asp-for="AccountId" asp-items="ViewBag.Accounts" class="form-select">
+            <option value="">-- Chưa gắn tài khoản --</option>
+        </select>
+        <span asp-validation-for="AccountId" class="text-danger"></span>
+    </div>
+    <div class="col-12 mb-3">
+        <label asp-for="PermanentAddress" class="form-label">Địa chỉ thường trú</label>
+        <textarea asp-for="PermanentAddress" class="form-control" rows="3"></textarea>
+    </div>
+</div>

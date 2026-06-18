@@ -1,0 +1,55 @@
+@model IEnumerable<smart_hostel_management_system.Models.Core.Contract>
+@{
+    ViewData["Title"] = "Quản lý hợp đồng";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Quản lý hợp đồng</h2>
+    <a asp-action="Create" class="btn btn-primary">Thêm hợp đồng</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Mã hợp đồng</th>
+                <th>Cư dân</th>
+                <th>Phòng</th>
+                <th>Thời hạn</th>
+                <th>Trạng thái</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contract in Model)
+            {
+                var detail = contract.ContractDetails.FirstOrDefault();
+                <tr>
+                    <td>@contract.ContractNumber</td>
+                    <td>@contract.Tenant?.FullName</td>
+                    <td>@detail?.Room?.RoomNumber</td>
+                    <td>
+                        @if (detail != null)
+                        {
+                            <span>@detail.StartDate.ToString("dd/MM/yyyy") - @detail.EndDate.ToString("dd/MM/yyyy")</span>
+                        }
+                    </td>
+                    <td>@contract.Status</td>
+                    <td class="text-nowrap">
+                        <a asp-action="Edit" asp-route-id="@contract.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@contract.Id" class="btn btn-sm btn-outline-danger">Xóa</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

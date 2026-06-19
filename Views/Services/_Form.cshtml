@@ -1,0 +1,24 @@
+@model smart_hostel_management_system.Models.Core.Service
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="Name" class="form-label">Tên dịch vụ</label>
+        <input asp-for="Name" class="form-control" placeholder="VD: Điện, Nước, Internet..." />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="Unit" class="form-label">Đơn vị tính</label>
+        <input asp-for="Unit" class="form-control" placeholder="VD: kWh, m³, tháng..." />
+        <span asp-validation-for="Unit" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="Price" class="form-label">Đơn giá (VNĐ)</label>
+        <input asp-for="Price" type="number" min="0" step="100" class="form-control" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+    <div class="col-12 mb-3">
+        <label asp-for="Description" class="form-label">Mô tả</label>
+        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Ghi chú thêm về dịch vụ..."></textarea>
+    </div>
+</div>

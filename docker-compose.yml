@@ -1,0 +1,32 @@
+#version: '3.8'
+
+services:
+  # 🗄️ CONTAINER DATABASE: Cả team (Visual Studio lẫn VS Code) đều dùng chung
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql_container
+    environment:
+      - ACCEPT_EULA=Y                   # Đồng ý với điều khoản của Microsoft
+      - MSSQL_SA_PASSWORD=YourPassword123! # Mật khẩu của tài khoản 'sa' (Thay đổi nếu muốn)
+    ports:
+      - "1433:1433"                     # Mở cổng 1433 ra máy thật để Visual Studio kết nối vào được
+    volumes:
+      - mssql_data:/var/opt/mssql       # Giữ lại dữ liệu, tắt container đi bật lại không bị mất sách
+
+  #CONTAINER WEB MVC: Chỉ dành riêng cho môi trường VS Code (Visual Studio sẽ tự build và chạy project mà không cần container này)
+  webmvc:
+    image: mvc-web-app
+    container_name: webmvc_container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080"                     # Ánh xạ cổng 5000 của máy thật vào cổng 8080 nội bộ của container
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - db                              # Ép container DB phải chạy trước thì Web mới chạy sau
+
+# Khai báo phân vùng lưu trữ dữ liệu cho SQL Server độc lập với vòng đời container
+volumes:
+  mssql_data:

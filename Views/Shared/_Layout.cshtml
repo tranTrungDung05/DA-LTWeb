@@ -1,9 +1,9 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - smart_hostel_management_system</title>
+    <title>@ViewData["Title"] - Smart Hostel Management System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/smart_hostel_management_system.styles.css" asp-append-version="true" />
@@ -22,7 +22,10 @@
                         @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-danger fw-bold" asp-controller="Admin" asp-action="Index">👑 Quản Lý Trọ</a>
+                                <a class="nav-link text-danger fw-bold" asp-controller="Admin" asp-action="Index">Quản lý trọ</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Contracts" asp-action="Index">Hợp đồng</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Tenants" asp-action="Index">Cư dân</a>
@@ -34,7 +37,7 @@
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <span class="nav-link text-dark font-weight-bold">Xin chào, <b>@User.Identity.Name</b>!</span>
+                                <span class="nav-link text-dark">Xin chào, <b>@User.Identity.Name</b>!</span>
                             </li>
                             <li class="nav-item">
                                 <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
@@ -45,7 +48,7 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-primary fw-bold" asp-controller="Account" asp-action="Login">Đăng Nhập</a>
+                                <a class="nav-link text-primary fw-bold" asp-controller="Account" asp-action="Login">Đăng nhập</a>
                             </li>
                         }
                     </ul>

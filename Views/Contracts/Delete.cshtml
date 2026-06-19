@@ -1,0 +1,20 @@
+@model smart_hostel_management_system.Models.Core.Contract
+@{
+    ViewData["Title"] = "Xóa hợp đồng";
+    var detail = Model.ContractDetails.FirstOrDefault();
+}
+
+<div class="card border-danger">
+    <div class="card-body">
+        <h2 class="text-danger">Xóa hợp đồng</h2>
+        <p>Bạn có chắc muốn xóa hợp đồng <strong>@Model.ContractNumber</strong> của @Model.Tenant?.FullName?</p>
+        @if (detail != null)
+        {
+            <p>Phòng: @detail.Room?.RoomNumber, từ @detail.StartDate.ToString("dd/MM/yyyy") đến @detail.EndDate.ToString("dd/MM/yyyy").</p>
+        }
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-danger">Xóa</button>
+            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+        </form>
+    </div>
+</div>

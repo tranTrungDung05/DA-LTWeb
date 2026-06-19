@@ -1,0 +1,60 @@
+@model smart_hostel_management_system.Models.ViewModels.ContractFormViewModel
+
+@Html.ValidationSummary(false, "", new { @class = "text-danger mb-3 fw-bold" })
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Mã hợp đồng</label>
+        @if (Model.Id == 0)
+        {
+            <input type="text" name="ContractNumber" value="AUTO" class="form-control text-secondary" readonly style="background-color: #e9ecef;" />
+            <small class="text-muted d-block mt-1">Mã số thực tế (Dạng: HD-YYYYMMDD-XXXX) sẽ tự sinh khi lưu thành công.</small>
+        }
+        else
+        {
+            <input type="text" name="ContractNumber" value="@Model.ContractNumber" class="form-control" readonly style="background-color: #e9ecef;" />
+        }
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Ngày lập hợp đồng</label>
+        <input type="date" name="Date" value="@(Model.Date.ToString("yyyy-MM-dd"))" class="form-control" />
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Cư dân đại diện (Ký hợp đồng)</label>
+        @Html.DropDownListFor(m => m.TenantId, (SelectList)ViewBag.Tenants, "-- Chọn cư dân đại diện --", new { @class = "form-select" })
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Chọn phòng trọ thuê</label>
+        @Html.DropDownListFor(m => m.RoomId, (SelectList)ViewBag.Rooms, "-- Chọn phòng trọ trống --", new { @class = "form-select" })
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Ngày bắt đầu ở</label>
+        <input type="date" name="StartDate" value="@(Model.StartDate.ToString("yyyy-MM-dd"))" class="form-control" />
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Ngày hết hạn hợp đồng</label>
+        <input type="date" name="EndDate" value="@(Model.EndDate.ToString("yyyy-MM-dd"))" class="form-control" />
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Trạng thái hợp đồng</label>
+        @Html.DropDownListFor(m => m.Status, Html.GetEnumSelectList<smart_hostel_management_system.Models.Enums.ContractStatus>(), new { @class = "form-select" })
+    </div>
+
+    <div class="col-12 mb-3">
+        <label class="form-label fw-bold">Quy định & Điều khoản chi tiết</label>
+        <textarea name="Content" class="form-control" rows="3" placeholder="Ví dụ: Tiền đặt cọc, quy định giờ giấc, đóng tiền phòng trước ngày mùng 5 hàng tháng...">@Model.Content</textarea>
+    </div>
+
+    <div class="col-12 mb-3">
+        <label class="form-label fw-bold">Ghi chú thêm</label>
+        <textarea name="Note" class="form-control" rows="2" placeholder="Ghi chú nội bộ dành cho chủ nhà quản lý...">@Model.Note</textarea>
+    </div>
+</div>
+
+<input type="hidden" name="Id" value="@Model.Id" />

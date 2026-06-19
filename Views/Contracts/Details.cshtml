@@ -1,0 +1,123 @@
+@model smart_hostel_management_system.Models.Core.Contract
+@{
+    ViewData["Title"] = "Chi tiết hợp đồng " + Model.ContractNumber;
+    var detail = Model.ContractDetails.FirstOrDefault();
+}
+
+<div class="container mt-4">
+    <!-- Khối thông tin hợp đồng chính -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <h4 class="mb-0 fw-bold">Thông tin chi tiết hợp đồng: @Model.ContractNumber</h4>
+        </div>
+        <div class="card-body bg-light">
+            <div class="row g-3">
+                <div class="col-md-6"><strong>Ngày lập hợp đồng:</strong> @Model.Date.ToString("dd/MM/yyyy")</div>
+                <div class="col-md-6"><strong>Trạng thái:</strong> <span class="badge bg-success">@Model.Status</span></div>
+                <div class="col-md-6"><strong>Người đại diện ký kết:</strong> <span class="text-primary fw-bold">@Model.Tenant?.FullName</span></div>
+                <div class="col-md-6"><strong>Phòng thuê:</strong> <span class="badge bg-dark">Phòng @(detail?.Room?.RoomNumber ?? "N/A")</span></div>
+                <div class="col-md-6"><strong>Ngày bắt đầu:</strong> @(detail?.StartDate.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                <div class="col-md-6"><strong>Ngày kết thúc:</strong> @(detail?.EndDate.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                <div class="col-12">
+                    <hr class="my-2" />
+                    <strong>Điều khoản hợp đồng:</strong>
+                    <p class="text-muted mt-1 bg-white p-3 border rounded">@Model.Note</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khu vực hiển thị thông báo phản hồi từ hệ thống -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show py-2 mb-3" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show py-2 mb-3" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Danh sách thành viên lưu trú và form bổ sung cư dân có sẵn -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold">Danh sách cư dân đang lưu trú thực tế</h5>
+            <a href="/Tenants/Create" class="btn btn-sm btn-success fw-bold px-3">Thêm cư dân mới</a>
+        </div>
+        
+        <!-- Biểu mẫu thêm nhanh cư dân có sẵn vào phòng -->
+        <div class="card-body bg-white border-bottom py-3">
+            <form action="/Contracts/AddExistingTenant" method="post" class="row g-3 align-items-center">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="contractId" value="@Model.Id" />
+                <input type="hidden" name="roomId" value="@(detail?.RoomId ?? 0)" />
+
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-secondary text-secondary">Thêm nhanh cư dân có sẵn:</span>
+                        @Html.DropDownList("tenantId", (SelectList)ViewBag.AvailableTenants, "-- Chọn cư dân từ danh sách hệ thống --", new { @class = "form-select border-secondary", required = "required" })
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary fw-bold w-100">Xác nhận thêm vào phòng</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bảng danh sách thành viên -->
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4" style="width: 30%;">Họ và tên</th>
+                        <th style="width: 25%;">Số điện thoại</th>
+                        <th style="width: 25%;">Email</th>
+                        <th class="pe-4" style="width: 20%;">Vai trò lưu trú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.Members != null && ((List<smart_hostel_management_system.Models.Core.TenantRoom>)ViewBag.Members).Count > 0)
+                    {
+                        foreach (var item in (List<smart_hostel_management_system.Models.Core.TenantRoom>)ViewBag.Members)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold">@item.Tenant?.FullName</td>
+                                <td class="text-secondary">@item.Tenant?.Phone</td>
+                                <td class="text-secondary">@item.Tenant?.Email</td>
+                                <td class="pe-4">
+                                    @if (item.IsRepresentative)
+                                    {
+                                        <span class="badge bg-danger px-2 py-1">Đại diện hợp đồng</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info text-white px-2 py-1">Thành viên ở ghép</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">
+                                Chưa có thông tin thành viên lưu trú cho phòng này.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Các nút chức năng điều hướng quay lại -->
+    <div class="mt-4 mb-5">
+        <a href="/Contracts/Edit/@Model.Id" class="btn btn-warning px-4 fw-bold">Sửa hợp đồng</a>
+        <a href="/Contracts" class="btn btn-secondary px-4 ms-2">Quay lại danh sách</a>
+    </div>
+</div>

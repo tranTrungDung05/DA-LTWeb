@@ -22,7 +22,7 @@ namespace smart_hostel_management_system.Controllers
             _context = context;
         }
 
-        // 1. DANH SÁCH HỢP ĐỒNG (INDEX)
+        // GET: Contracts
         public async Task<IActionResult> Index()
         {
             var contracts = await _context.Contracts
@@ -36,9 +36,13 @@ namespace smart_hostel_management_system.Controllers
             return View(contracts);
         }
 
-        // 2. CHI TIẾT HỢP ĐỒNG (DETAILS) - THỂ HIỆN PHÒNG CÓ NHIỀU NGƯỜI
+        // GET: Contracts/Details/5
+        [HttpGet]
+        [Route("Contracts/Details/{id:int}")]
         public async Task<IActionResult> Details(int id)
         {
+            if (id <= 0) return BadRequest();
+
             var contract = await _context.Contracts
                 .AsNoTracking()
                 .Include(c => c.Tenant)
@@ -49,7 +53,7 @@ namespace smart_hostel_management_system.Controllers
 
             var roomId = contract.ContractDetails.FirstOrDefault()?.RoomId;
 
-            // Truy vấn lấy toàn bộ thành viên đang ở phòng này từ bảng trung gian TenantRoom
+            // Truy vấn danh sách thành viên hiện tại của phòng từ bảng trung gian TenantRoom
             var membersInRoom = await _context.TenantRooms
                 .Include(tr => tr.Tenant)
                 .Where(tr => tr.RoomId == roomId && tr.IsCurrent == true)
@@ -57,17 +61,68 @@ namespace smart_hostel_management_system.Controllers
 
             ViewBag.Members = membersInRoom;
 
+            // Truy vấn danh sách cư dân chưa được xếp phòng trên hệ thống
+            var assignedTenantIds = await _context.TenantRooms
+                .Where(tr => tr.IsCurrent == true)
+                .Select(tr => tr.TenantId)
+                .ToListAsync();
+
+            var availableTenants = await _context.Tenants
+                .AsNoTracking()
+                .Where(t => !assignedTenantIds.Contains(t.Id))
+                .OrderBy(t => t.FullName)
+                .ToListAsync();
+
+            ViewBag.AvailableTenants = new SelectList(availableTenants, "Id", "FullName");
+
             return View(contract);
         }
 
-        // 3. THÊM MỚI HỢP ĐỒNG (GET)
+        // POST: Contracts/AddExistingTenant
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddExistingTenant(int contractId, int roomId, int tenantId)
+        {
+            if (tenantId <= 0 || roomId <= 0)
+            {
+                TempData["Error"] = "Thông tin cư dân hoặc phòng không hợp lệ.";
+                return RedirectToAction(nameof(Details), new { id = contractId });
+            }
+
+            // Kiểm tra trùng lặp bản ghi lưu trú hiện tại
+            bool isAlreadyInRoom = await _context.TenantRooms
+                .AnyAsync(tr => tr.RoomId == roomId && tr.TenantId == tenantId && tr.IsCurrent == true);
+
+            if (isAlreadyInRoom)
+            {
+                TempData["Error"] = "Cư dân này đã tồn tại trong phòng.";
+                return RedirectToAction(nameof(Details), new { id = contractId });
+            }
+
+            // Tạo mới bản ghi lưu trú cho thành viên ở ghép
+            var newGuest = new TenantRoom
+            {
+                TenantId = tenantId,
+                RoomId = roomId,
+                IsRepresentative = false,
+                IsCurrent = true
+            };
+
+            _context.TenantRooms.Add(newGuest);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Thêm cư dân vào phòng thành công.";
+            return RedirectToAction(nameof(Details), new { id = contractId });
+        }
+
+        // GET: Contracts/Create
         public async Task<IActionResult> Create()
         {
             await LoadSelections();
             return View(new ContractFormViewModel());
         }
 
-        // 4. THÊM MỚI HỢP ĐỒNG (POST)
+        // POST: Contracts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ContractFormViewModel model)
@@ -92,7 +147,6 @@ namespace smart_hostel_management_system.Controllers
                 ? $"HD-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}" 
                 : model.ContractNumber.Trim();
 
-            // Khởi tạo thực thể Contract
             var contract = new Contract
             {
                 ContractNumber = finalContractNumber,
@@ -111,7 +165,7 @@ namespace smart_hostel_management_system.Controllers
             };
             _context.Contracts.Add(contract);
 
-            // ĐỒNG BỘ: Thêm ngay người đại diện này vào danh sách phòng (TenantRoom)
+            // Tự động thêm người đại diện hợp đồng vào bảng trung gian TenantRoom
             var tenantRoomRelation = new TenantRoom
             {
                 TenantId = model.TenantId,
@@ -122,11 +176,11 @@ namespace smart_hostel_management_system.Controllers
             _context.TenantRooms.Add(tenantRoomRelation);
 
             await _context.SaveChangesAsync();
-            TempData["Success"] = $"Đã thêm hợp đồng {finalContractNumber} thành công.";
+            TempData["Success"] = $"Thêm hợp đồng {finalContractNumber} thành công.";
             return RedirectToAction(nameof(Index));
         }
 
-        // 5. CHỈNH SỬA HỢP ĐỒNG (GET)
+        // GET: Contracts/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
             var contract = await _context.Contracts
@@ -155,7 +209,7 @@ namespace smart_hostel_management_system.Controllers
             return View(model);
         }
 
-        // 6. CHỈNH SỬA HỢP ĐỒNG (POST)
+        // POST: Contracts/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ContractFormViewModel model)
@@ -191,11 +245,11 @@ namespace smart_hostel_management_system.Controllers
             detail.Content = model.Content;
 
             await _context.SaveChangesAsync();
-            TempData["Success"] = "Đã cập nhật thay đổi hợp đồng.";
+            TempData["Success"] = "Cập nhật thông tin hợp đồng thành công.";
             return RedirectToAction(nameof(Index));
         }
 
-        // 7. XÓA HỢP ĐỒNG
+        // GET: Contracts/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
             var contract = await _context.Contracts
@@ -207,6 +261,7 @@ namespace smart_hostel_management_system.Controllers
             return contract == null ? NotFound() : View(contract);
         }
 
+        // POST: Contracts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -216,18 +271,18 @@ namespace smart_hostel_management_system.Controllers
 
             if (await _context.Invoices.AnyAsync(i => i.ContractId == id))
             {
-                TempData["Error"] = "Không được xóa hợp đồng đã phát sinh hóa đơn tiền phòng!";
+                TempData["Error"] = "Không thể xóa hợp đồng đã phát sinh hóa đơn tiền phòng.";
                 return RedirectToAction(nameof(Index));
             }
 
             _context.ContractDetails.RemoveRange(contract.ContractDetails);
             _context.Contracts.Remove(contract);
             await _context.SaveChangesAsync();
-            TempData["Success"] = "Đã xóa bỏ dữ liệu hợp đồng.";
+            TempData["Success"] = "Xóa hợp đồng thành công.";
             return RedirectToAction(nameof(Index));
         }
 
-        // CÁC HÀM PHỤ TRỢ (VALIDATE & LOAD DROPDOWN)
+        // Kiểm tra logic ràng buộc của hợp đồng
         private async Task ValidateContract(ContractFormViewModel model)
         {
             if (string.IsNullOrWhiteSpace(model.ContractNumber))
@@ -236,7 +291,7 @@ namespace smart_hostel_management_system.Controllers
             }
             else if (await _context.Contracts.AnyAsync(c => c.ContractNumber.Trim() == model.ContractNumber.Trim() && c.Id != model.Id))
             {
-                ModelState.AddModelError(nameof(model.ContractNumber), "Mã hợp đồng này đã tồn tại trên hệ thống.");
+                ModelState.AddModelError(nameof(model.ContractNumber), "Mã hợp đồng đã tồn tại trên hệ thống.");
             }
 
             if (model.EndDate < model.StartDate)
@@ -245,6 +300,7 @@ namespace smart_hostel_management_system.Controllers
             }
         }
 
+        // Nạp dữ liệu cấu hình cho các danh sách lựa chọn (Dropdown)
         private async Task LoadSelections(int? tenantId = null, int? roomId = null)
         {
             ViewBag.Tenants = new SelectList(await _context.Tenants.AsNoTracking().OrderBy(t => t.FullName).ToListAsync(), "Id", "FullName", tenantId);

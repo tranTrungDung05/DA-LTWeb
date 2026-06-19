@@ -1,55 +1,121 @@
 @model IEnumerable<smart_hostel_management_system.Models.Core.Contract>
+
 @{
-    ViewData["Title"] = "Quản lý hợp đồng";
+    ViewData["Title"] = "Danh sách hợp đồng";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Quản lý hợp đồng</h2>
-    <a asp-action="Create" class="btn btn-primary">Thêm hợp đồng</a>
-</div>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">📜 Quản lý hợp đồng</h2>
+        <a href="/Contracts/Create" class="btn btn-primary fw-bold px-3 py-2">
+            ➕ Thêm hợp đồng mới
+        </a>
+    </div>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            🔹 @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            ⚠️ @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-<div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
-        <thead>
-            <tr>
-                <th>Mã hợp đồng</th>
-                <th>Cư dân</th>
-                <th>Phòng</th>
-                <th>Thời hạn</th>
-                <th>Trạng thái</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var contract in Model)
-            {
-                var detail = contract.ContractDetails.FirstOrDefault();
-                <tr>
-                    <td>@contract.ContractNumber</td>
-                    <td>@contract.Tenant?.FullName</td>
-                    <td>@detail?.Room?.RoomNumber</td>
-                    <td>
-                        @if (detail != null)
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3" style="width: 18%;">Mã hợp đồng</th>
+                            <th style="width: 20%;">Cư dân đại diện</th>
+                            <th style="width: 15%;">Phòng trọ</th>
+                            <th style="width: 22%;">Thời hạn thuê</th>
+                            <th style="width: 12%;">Trạng thái</th>
+                            <th class="text-center" style="width: 13%;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
                         {
-                            <span>@detail.StartDate.ToString("dd/MM/yyyy") - @detail.EndDate.ToString("dd/MM/yyyy")</span>
+                            foreach (var item in Model)
+                            {
+                                // Lấy chi tiết hợp đồng đầu tiên để lấy thông tin Phòng và Ngày ở
+                                var detail = item.ContractDetails?.FirstOrDefault();
+                                <tr>
+                                    <td class="ps-3 font-monospace fw-bold text-secondary">
+                                        @item.ContractNumber
+                                    </td>
+                                    
+                                    <td class="fw-bold">
+                                        @item.Tenant?.FullName
+                                    </td>
+                                    
+                                    <td>
+                                        <span class="badge bg-light text-dark border px-2 py-1">
+                                            🏢 @(detail?.Room?.RoomNumber ?? "Chưa xếp phòng")
+                                        </span>
+                                    </td>
+                                    
+                                    <td class="small text-muted">
+                                        @if (detail != null)
+                                        {
+                                            <span>@detail.StartDate.ToString("dd/MM/yyyy")</span>
+                                            <span class="mx-1">➔</span>
+                                            <span>@detail.EndDate.ToString("dd/MM/yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <span>N/A</span>
+                                        }
+                                    </td>
+                                    
+                                    <td>
+                                        @if (item.Status.ToString() == "Active")
+                                        {
+                                            <span class="badge bg-success px-2 py-1">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary px-2 py-1">@item.Status</span>
+                                        }
+                                    </td>
+                                    
+                                    <td class="text-center pe-3">
+                                        <div class="btn-group" role="group">
+                                            <a href="/Contracts/Details/@item.Id" class="btn btn-sm btn-info text-white" title="Xem chi tiết thành viên">
+                                                 Xem
+                                            </a>
+                                            
+                                            <a href="/Contracts/Edit/@item.Id" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                                Sửa
+                                            </a>
+                                            
+                                            <a href="/Contracts/Delete/@item.Id" class="btn btn-sm btn-outline-danger" title="Xóa bỏ">
+                                                Xóa
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
                         }
-                    </td>
-                    <td>@contract.Status</td>
-                    <td class="text-nowrap">
-                        <a asp-action="Edit" asp-route-id="@contract.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@contract.Id" class="btn btn-sm btn-outline-danger">Xóa</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    Hiện chưa có dữ liệu hợp đồng nào được thiết lập.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

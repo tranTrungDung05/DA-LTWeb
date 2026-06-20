@@ -1,0 +1,22 @@
+@model smart_hostel_management_system.Models.ViewModels.PaymentResultViewModel
+@{
+    ViewData["Title"] = "Kết quả thanh toán";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="alert @(Model.IsValid && Model.IsSuccessful ? "alert-success" : "alert-warning") text-center">
+                <h3>@(Model.IsValid && Model.IsSuccessful ? "Giao dịch đã được tiếp nhận" : "Giao dịch chưa thành công")</h3>
+                <p class="mb-1">@Model.Message</p>
+                @if (!string.IsNullOrWhiteSpace(Model.TransactionCode))
+                {
+                    <p class="mb-0">Mã giao dịch: <strong>@Model.TransactionCode</strong></p>
+                }
+            </div>
+            <div class="text-center">
+                <a asp-controller="Invoices" asp-action="MyInvoices" class="btn btn-primary">Xem hóa đơn của tôi</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -37,6 +37,10 @@ public class AppDbContext : IdentityDbContext<Account, IdentityRole<int>, int>
         modelBuilder.Entity<InvoiceDetail>().Property(id => id.UnitPrice).HasPrecision(18, 2);
         modelBuilder.Entity<InvoiceDetail>().Property(id => id.SubTotal).HasPrecision(18, 2);
         modelBuilder.Entity<Payment>().Property(p => p.Amount).HasPrecision(18, 2);
+        modelBuilder.Entity<Payment>()
+            .HasIndex(p => p.ProviderOrderId)
+            .IsUnique()
+            .HasFilter("[ProviderOrderId] <> ''");
         modelBuilder.Entity<Room>().Property(r => r.MonthlyPrice).HasPrecision(18, 2);
         modelBuilder.Entity<Service>().Property(s => s.Price).HasPrecision(18, 2);
         

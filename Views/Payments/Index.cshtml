@@ -1,0 +1,51 @@
+@model IEnumerable<smart_hostel_management_system.Models.Core.Payment>
+@using smart_hostel_management_system.Models.Enums
+@{
+    ViewData["Title"] = "Đối soát giao dịch";
+}
+
+<div class="container py-4">
+    <h2 class="mb-3">Đối soát giao dịch</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Thời gian tạo</th>
+                    <th>Hóa đơn</th>
+                    <th>Khách thuê</th>
+                    <th>Cổng</th>
+                    <th>Số tiền</th>
+                    <th>Mã giao dịch</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var payment in Model)
+                {
+                    <tr>
+                        <td>@payment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <a asp-controller="Invoices" asp-action="Details" asp-route-id="@payment.InvoiceId">
+                                @payment.Invoice?.InvoiceNumber
+                            </a>
+                        </td>
+                        <td>@payment.Invoice?.Tenant?.FullName</td>
+                        <td>@payment.PaymentMethod</td>
+                        <td>@payment.Amount.ToString("N0") VNĐ</td>
+                        <td>@(payment.TransactionCode ?? payment.ProviderOrderId)</td>
+                        <td>
+                            <span class="badge @(payment.Status == PaymentStatus.Succeeded ? "bg-success" : payment.Status == PaymentStatus.Failed ? "bg-danger" : "bg-warning text-dark")">
+                                @payment.Status
+                            </span>
+                            @if (!string.IsNullOrWhiteSpace(payment.ProviderResponseCode))
+                            {
+                                <small class="d-block">Mã: @payment.ProviderResponseCode</small>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

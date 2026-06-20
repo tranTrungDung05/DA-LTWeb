@@ -155,7 +155,11 @@ namespace smart_hostel_management_system.Controllers
             _context.Payments.Add(new Payment {
                 InvoiceId = invoice.Id,
                 Amount = invoice.TotalAmount,
+                CreatedAt = DateTime.Now,
                 DateTimePaidAt = DateTime.Now,
+                PaymentMethod = "Tiền mặt/Chuyển khoản",
+                ProviderOrderId = $"MANUAL-{invoice.Id}-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
+                Status = PaymentStatus.Succeeded,
                 Note = "Admin xác nhận thủ công"
             });
             
@@ -268,6 +272,25 @@ namespace smart_hostel_management_system.Controllers
 
             if (invoice == null)
                 return NotFound();
+
+            if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!User.IsInRole("Admin"))
+            {
+                var account = await _userManager.GetUserAsync(User);
+                var canView = account != null
+                    && invoice.IsPublished
+                    && await _context.Tenants.AnyAsync(
+                        tenant => tenant.Id == invoice.TenantId && tenant.AccountId == account.Id);
+
+                if (!canView)
+                {
+                    return Forbid();
+                }
+            }
 
             return View(invoice);
         }

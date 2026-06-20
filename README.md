@@ -42,6 +42,23 @@ Khi có bất kỳ sự thay đổi nào trong thư mục Models cấu trúc d�
 4. Đổi ngược lại Server=localhost; về lại Server=db; trong file appsettings.json để container Web nhận diện được DB, sau đó build lại web:
     **docker compose up --build -d webmvc**
 
+### 🔹 Cấu hình thanh toán sandbox MoMo/VNPay
+Không commit khóa merchant vào Git. Cấp cấu hình bằng biến môi trường:
+
+```text
+PaymentGateways__PublicBaseUrl=https://your-public-https-domain
+PaymentGateways__Momo__PartnerCode=...
+PaymentGateways__Momo__AccessKey=...
+PaymentGateways__Momo__SecretKey=...
+PaymentGateways__VnPay__TmnCode=...
+PaymentGateways__VnPay__HashSecret=...
+```
+
+MoMo IPN được gửi tới `/Payments/MomoIpn`. Trong trang quản trị sandbox VNPay,
+cấu hình IPN URL là `https://your-public-https-domain/Payments/VnPayIpn`.
+`PublicBaseUrl` phải là HTTPS URL mà MoMo/VNPay có thể truy cập; `localhost`
+chỉ phù hợp kiểm tra giao diện và không nhận được webhook từ cổng thanh toán.
+
 ### 🔹 Dọn dẹp cuối buổi làm việc
 Để tắt toàn bộ hệ thống và giải phóng tài nguyên RAM/CPU cho máy tính mà không làm mất dữ liệu đã lưu trong Database:
     **docker compose down**

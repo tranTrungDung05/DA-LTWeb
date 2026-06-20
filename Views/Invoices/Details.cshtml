@@ -6,7 +6,7 @@
             <h2>📋 Chi tiết Hóa đơn: <strong>@Model.InvoiceNumber</strong></h2>
         </div>
         <div class="col-md-4 text-end">
-            <a asp-action="Index" class="btn btn-secondary">← Quay lại</a>
+            <a asp-action="@(User.IsInRole("Admin") ? "Index" : "MyInvoices")" class="btn btn-secondary">← Quay lại</a>
             @if (!Model.IsPublished)
             {
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">✏️ Sửa</a>
@@ -164,6 +164,32 @@
         </div>
     </div>
 
+    @if (Model.IsPublished && Model.Status != smart_hostel_management_system.Models.Enums.InvoiceStatus.Paid)
+    {
+        <div class="row mt-4 mb-4">
+            <div class="col-12">
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <strong>Thanh toán trực tuyến</strong>
+                    </div>
+                    <div class="card-body">
+                        <p>Chọn cổng thanh toán để tạo link và mã QR theo số tiền của hóa đơn.</p>
+                        <form asp-controller="Payments" asp-action="Create" method="post" class="d-inline">
+                            <input type="hidden" name="invoiceId" value="@Model.Id" />
+                            <input type="hidden" name="provider" value="MOMO" />
+                            <button type="submit" class="btn btn-danger">Thanh toán MoMo</button>
+                        </form>
+                        <form asp-controller="Payments" asp-action="Create" method="post" class="d-inline">
+                            <input type="hidden" name="invoiceId" value="@Model.Id" />
+                            <input type="hidden" name="provider" value="VNPAY" />
+                            <button type="submit" class="btn btn-primary">Thanh toán VNPay</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
     <!-- Lịch sử thanh toán -->
     @if (Model.Payments.Any())
     {
@@ -177,18 +203,37 @@
                         <table class="table table-sm">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Ngày thanh toán</th>
+                                    <th>Thời gian</th>
                                     <th class="text-right">Số tiền</th>
+                                    <th>Phương thức</th>
+                                    <th>Mã giao dịch</th>
+                                    <th>Trạng thái</th>
                                     <th>Ghi chú</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var payment in Model.Payments)
                                 {
                                     <tr>
-                                        <td>@payment.DateTimePaidAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@(payment.DateTimePaidAt?.ToString("dd/MM/yyyy HH:mm") ?? payment.CreatedAt.ToString("dd/MM/yyyy HH:mm"))</td>
                                         <td class="text-right"><strong>@payment.Amount.ToString("N0") VNĐ</strong></td>
+                                        <td>@payment.PaymentMethod</td>
+                                        <td>@(payment.TransactionCode ?? payment.ProviderOrderId)</td>
+                                        <td>@payment.Status</td>
                                         <td>@(payment.Note ?? "N/A")</td>
+                                        <td>
+                                            @if (payment.Status == smart_hostel_management_system.Models.Enums.PaymentStatus.Pending
+                                                && !string.IsNullOrWhiteSpace(payment.PaymentUrl))
+                                            {
+                                                <a asp-controller="Payments"
+                                                   asp-action="Checkout"
+                                                   asp-route-id="@payment.Id"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    Tiếp tục thanh toán
+                                                </a>
+                                            }
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
@@ -202,7 +247,7 @@
     <!-- Hành động -->
     <div class="row mt-4">
         <div class="col-12">
-            <a asp-action="Index" class="btn btn-secondary">← Quay lại danh sách</a>
+            <a asp-action="@(User.IsInRole("Admin") ? "Index" : "MyInvoices")" class="btn btn-secondary">← Quay lại danh sách</a>
             @if (!Model.IsPublished)
             {
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">✏️ Sửa</a>

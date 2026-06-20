@@ -5,6 +5,7 @@ namespace smart_hostel_management_system.Models.Enums
         Unpaid,
         PartiallyPaid,
         Paid,
-        Overdue
+        Overdue,
+        Pending
     }
 }

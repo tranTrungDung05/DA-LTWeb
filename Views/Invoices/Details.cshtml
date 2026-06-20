@@ -1,16 +1,221 @@
-@model IEnumerable<smart_hostel_management_system.Models.Core.Invoice>
+@model smart_hostel_management_system.Models.Core.Invoice
 
-<h2>Hóa đơn của tôi</h2>
-<table class="table">
-    <thead><tr><th>Tháng</th><th>Tổng tiền</th><th>Trạng thái</th><th>Chi tiết</th></tr></thead>
-    <tbody>
-        @foreach (var item in Model) {
-            <tr>
-                <td>@item.Month/@item.Year</td>
-                <td>@item.TotalAmount.ToString("N0") đ</td>
-                <td>@item.Status</td>
-                <td><a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Xem chi tiết</a></td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>📋 Chi tiết Hóa đơn: <strong>@Model.InvoiceNumber</strong></h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-action="Index" class="btn btn-secondary">← Quay lại</a>
+            @if (!Model.IsPublished)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">✏️ Sửa</a>
+            }
+        </div>
+    </div>
+
+    <!-- Thông tin chính -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <strong>Thông tin hóa đơn</strong>
+                </div>
+                <div class="card-body">
+                    <p><strong>Số hóa đơn:</strong> @Model.InvoiceNumber</p>
+                    <p><strong>Tháng/Năm:</strong> @Model.Month/@Model.Year</p>
+                    <p><strong>Ngày phát hành:</strong> @Model.IssueDate.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Ngày hạn:</strong> @Model.DueDate.ToString("dd/MM/yyyy")</p>
+                    <p>
+                        <strong>Trạng thái:</strong>
+                        <span class="badge @(Model.IsPublished ? "bg-info" : "bg-secondary")">
+                            @(Model.IsPublished ? "✓ Phát hành" : "○ Nháp")
+                        </span>
+                    </p>
+                    <p>
+                        <strong>Thanh toán:</strong>
+                        <span class="badge @(Model.Status == smart_hostel_management_system.Models.Enums.InvoiceStatus.Paid ? "bg-success" : "bg-warning")">
+                            @(Model.Status == smart_hostel_management_system.Models.Enums.InvoiceStatus.Paid ? "✓ Đã thanh toán" : "⏳ Chưa thanh toán")
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <strong>Thông tin khách hàng</strong>
+                </div>
+                <div class="card-body">
+                    <p><strong>Tên khách hàng:</strong> @Model.Tenant?.FullName ?? "N/A"</p>
+                    <p><strong>Phòng:</strong> @Model.Room?.RoomNumber ?? "N/A"</p>
+                    <p><strong>Giá phòng/tháng:</strong> <span class="text-primary">@Model.Room?.MonthlyPrice.ToString("N0") VNĐ</span></p>
+                    @if (!string.IsNullOrEmpty(Model.MainContent))
+                    {
+                        <p><strong>Ghi chú:</strong> @Model.MainContent</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng chi tiết dịch vụ -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <strong>📊 Chi tiết dịch vụ</strong>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tên dịch vụ</th>
+                                    <th class="text-right" style="width: 100px;">Đơn vị</th>
+                                    <th class="text-right" style="width: 100px;">Số lượng</th>
+                                    <th class="text-right" style="width: 120px;">Đơn giá</th>
+                                    <th class="text-right" style="width: 120px;">Cộng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Phòng (luôn có) -->
+                                <tr class="table-warning">
+                                    <td><strong>💰 Tiền phòng</strong></td>
+                                    <td class="text-center">Tháng</td>
+                                    <td class="text-right">1</td>
+                                    <td class="text-right"><strong>@Model.Room?.MonthlyPrice.ToString("N0") VNĐ</strong></td>
+                                    <td class="text-right"><strong>@Model.Room?.MonthlyPrice.ToString("N0") VNĐ</strong></td>
+                                </tr>
+
+                                <!-- Dịch vụ -->
+                                @if (Model.InvoiceDetails.Any())
+                                {
+                                    @foreach (var detail in Model.InvoiceDetails)
+                                    {
+                                        <tr>
+                                            <td>@detail.Service?.Name ?? "N/A"</td>
+                                            <td class="text-center">@detail.Unit</td>
+                                            <td class="text-right">@detail.Quantity.ToString("N2")</td>
+                                            <td class="text-right">@detail.UnitPrice.ToString("N0") VNĐ</td>
+                                            <td class="text-right">
+                                                @if (detail.Quantity > 0)
+                                                {
+                                                    <strong>@detail.SubTotal.ToString("N0") VNĐ</strong>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">0 VNĐ</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Không có dịch vụ nào</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tổng cộng -->
+    <div class="row">
+        <div class="col-md-6 ms-auto mb-4">
+            <div class="card bg-light border-primary">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-8">
+                            <strong>Tiền phòng:</strong>
+                        </div>
+                        <div class="col-4 text-end">
+                            <strong>@Model.Room?.MonthlyPrice.ToString("N0")</strong> VNĐ
+                        </div>
+                    </div>
+                    @if (Model.InvoiceDetails.Any(d => d.Quantity > 0))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-8">
+                                <strong>Dịch vụ:</strong>
+                            </div>
+                            <div class="col-4 text-end">
+                                <strong>@Model.InvoiceDetails.Where(d => d.Quantity > 0).Sum(d => d.SubTotal).ToString("N0")</strong> VNĐ
+                            </div>
+                        </div>
+                    }
+                    <hr />
+                    <div class="row">
+                        <div class="col-8">
+                            <h5>Tổng cộng:</h5>
+                        </div>
+                        <div class="col-4 text-end">
+                            <h4 class="text-danger">@Model.TotalAmount.ToString("N0")</h4> VNĐ
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lịch sử thanh toán -->
+    @if (Model.Payments.Any())
+    {
+        <div class="row mt-4 mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <strong>💳 Lịch sử thanh toán</strong>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ngày thanh toán</th>
+                                    <th class="text-right">Số tiền</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var payment in Model.Payments)
+                                {
+                                    <tr>
+                                        <td>@payment.DateTimePaidAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td class="text-right"><strong>@payment.Amount.ToString("N0") VNĐ</strong></td>
+                                        <td>@(payment.Note ?? "N/A")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Hành động -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <a asp-action="Index" class="btn btn-secondary">← Quay lại danh sách</a>
+            @if (!Model.IsPublished)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">✏️ Sửa</a>
+                <form asp-action="Publish" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-primary" onclick="return confirm('Phát hành hóa đơn này?')">📤 Phát hành</button>
+                </form>
+            }
+            @if (Model.IsPublished && Model.Status != smart_hostel_management_system.Models.Enums.InvoiceStatus.Paid)
+            {
+                <form asp-action="MarkAsPaid" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Xác nhận đã thu tiền?')">💰 Đã thu tiền</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>

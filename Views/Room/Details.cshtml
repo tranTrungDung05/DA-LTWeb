@@ -1,0 +1,125 @@
+@using smart_hostel_management_system.Models.Enums
+@model smart_hostel_management_system.Models.Core.Room
+
+@{
+    ViewData["Title"] = "Chi tiết phòng";
+}
+
+<div class="container" style="padding-top: 20px;">
+    <div class="row">
+        
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header" style="background-color: #343a40; color: white;">
+                    <h5>Thông Tin Phòng</h5>
+                </div>
+                <div class="card-body">
+                    <h2>Phòng: @Model.RoomNumber</h2>
+                    <p><b>Diện tích:</b> @Model.Area m²</p>
+                    <p><b>Giá thuê:</b> @Model.MonthlyPrice.ToString("N0") đ / tháng</p>
+                    <p><b>Số người tối đa:</b> @Model.MaxOccupants người</p>
+                    
+                    <p>
+                        <b>Trạng thái:</b> 
+                        @if (Model.Status == RoomStatus.Available)
+                        {
+                            <span class="badge bg-success">Còn trống</span>
+                        }
+                        @if (Model.Status == RoomStatus.Occupied)
+                        {
+                            <span class="badge bg-danger">Đang ở</span>
+                        }
+                        @if (Model.Status == RoomStatus.Maintenance)
+                        {
+                            <span class="badge bg-warning text-dark">Bảo trì</span>
+                        }
+                        @if (Model.Status == RoomStatus.Locked)
+                        {
+                            <span class="badge bg-secondary">Đã khóa</span>
+                        }
+                    </p>
+
+                    <p><b>Ghi chú:</b> @Model.Note</p>
+
+                    <a href="/Room/Index" class="btn btn-secondary" style="width: 100%;">Quay lại danh sách</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header" style="background-color: #17a2b8; color: white;">
+                    <h5>Thành Viên Trong Phòng</h5>
+                </div>
+                <div class="card-body">
+                    
+                    <h6 class="fw-bold">Thêm thành viên mới:</h6>
+                    <form action="/Room/AddTenant" method="post" class="row g-3">
+                        @Html.AntiForgeryToken()
+                        
+                        <input type="hidden" name="roomId" value="@Model.Id" />
+                        
+                        <div class="col-md-8">
+                            <select name="tenantId" class="form-select" required>
+                                <option value="">-- Chọn khách thuê --</option>
+                                @foreach (var item in (SelectList)ViewBag.AvailableTenants)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-success" style="width: 100%;">Thêm vào</button>
+                        </div>
+                    </form>
+
+                    <hr />
+
+                    <h6 class="fw-bold">Danh sách người đang lưu trú:</h6>
+
+                    @if (Model.TenantRooms == null || Model.TenantRooms.Count == 0)
+                    {
+                        <div class="alert alert-warning text-center">
+                            Phòng này hiện chưa có thành viên nào.
+                        </div>
+                    }
+                    else
+                    {
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Họ và Tên</th>
+                                    <th style="width: 120px; text-center">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var tr in Model.TenantRooms)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (tr.Tenant != null)
+                                            {
+                                                @tr.Tenant.FullName
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <form action="/Room/RemoveTenant" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="roomId" value="@Model.Id" />
+                                                <input type="hidden" name="tenantId" value="@tr.TenantId" />
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xóa người này khỏi phòng?');">
+                                                    Mời ra
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,62 @@
+@model IEnumerable<smart_hostel_management_system.Models.Core.Service>
+@{
+    ViewData["Title"] = "Quản lý dịch vụ";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Quản lý dịch vụ</h2>
+    <a asp-action="Create" class="btn btn-primary">+ Thêm dịch vụ</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Tên dịch vụ</th>
+                <th>Đơn vị tính</th>
+                <th class="text-end">Đơn giá (VNĐ)</th>
+                <th>Mô tả</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="6" class="text-center text-muted fst-italic">Chưa có dịch vụ nào.</td>
+                </tr>
+            }
+            @{int stt = 1;}
+            @foreach (var service in Model)
+            {
+                <tr>
+                    <td>@(stt++)</td>
+                    <td>@service.Name</td>
+                    <td>@service.Unit</td>
+                    <td class="text-end">@service.Price.ToString("N0")</td>
+                    <td>@(service.Description ?? "—")</td>
+                    <td class="text-nowrap text-center">
+                        <a asp-action="Edit" asp-route-id="@service.Id" class="btn btn-sm btn-outline-primary">✏️ Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@service.Id" class="btn btn-sm btn-outline-danger">🗑️ Xóa</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,58 @@
+@using smart_hostel_management_system.Models.Enums
+@model smart_hostel_management_system.Models.Core.Room
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0 rounded-3">
+                <div class="card-header bg-warning text-dark p-3">
+                    <h5 class="mb-0 fw-bold text-uppercase">✏️ Cập nhật thông tin phòng</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Tên / Số Phòng</label>
+                            <input asp-for="RoomNumber" class="form-control" required />
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold text-secondary">Diện Tích (m²)</label>
+                                <input asp-for="Area" type="number" step="0.1" class="form-control" required />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold text-secondary">Số Người Ở Tối Đa</label>
+                                <input asp-for="MaxOccupants" type="number" class="form-control" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Giá Thuê Mỗi Tháng (VND)</label>
+                            <div class="input-group">
+                                <input asp-for="MonthlyPrice" type="number" class="form-control" required />
+                                <span class="input-group-text">đ</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Trạng Thái Hiện Tại</label>
+                            <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<RoomStatus>()"></select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Ghi Chú</label>
+                            <textarea asp-for="Note" class="form-control" rows="2"></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a asp-action="Index" class="text-decoration-none text-secondary">⬅️ Hủy bỏ</a>
+                            <button type="submit" class="btn btn-warning px-4 py-2 shadow-sm text-dark fw-bold">Cập Nhật</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

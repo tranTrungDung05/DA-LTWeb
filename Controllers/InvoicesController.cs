@@ -146,6 +146,7 @@ namespace smart_hostel_management_system.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> MarkAsPaid(int id)
         {
             var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.Id == id);

@@ -33,7 +33,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<PaymentGatewayOptions>(
     builder.Configuration.GetSection("PaymentGateways"));
-builder.Services.AddHttpClient<PaymentGatewayService>();
+builder.Services.AddScoped<PaymentGatewayService>();
 
 var app = builder.Build();
 

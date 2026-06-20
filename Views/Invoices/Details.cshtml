@@ -176,11 +176,6 @@
                         <p>Chọn cổng thanh toán để tạo link và mã QR theo số tiền của hóa đơn.</p>
                         <form asp-controller="Payments" asp-action="Create" method="post" class="d-inline">
                             <input type="hidden" name="invoiceId" value="@Model.Id" />
-                            <input type="hidden" name="provider" value="MOMO" />
-                            <button type="submit" class="btn btn-danger">Thanh toán MoMo</button>
-                        </form>
-                        <form asp-controller="Payments" asp-action="Create" method="post" class="d-inline">
-                            <input type="hidden" name="invoiceId" value="@Model.Id" />
                             <input type="hidden" name="provider" value="VNPAY" />
                             <button type="submit" class="btn btn-primary">Thanh toán VNPay</button>
                         </form>
@@ -248,14 +243,16 @@
     <div class="row mt-4">
         <div class="col-12">
             <a asp-action="@(User.IsInRole("Admin") ? "Index" : "MyInvoices")" class="btn btn-secondary">← Quay lại danh sách</a>
-            @if (!Model.IsPublished)
+            @if (User.IsInRole("Admin") && !Model.IsPublished)
             {
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">✏️ Sửa</a>
                 <form asp-action="Publish" asp-route-id="@Model.Id" method="post" class="d-inline">
                     <button type="submit" class="btn btn-primary" onclick="return confirm('Phát hành hóa đơn này?')">📤 Phát hành</button>
                 </form>
             }
-            @if (Model.IsPublished && Model.Status != smart_hostel_management_system.Models.Enums.InvoiceStatus.Paid)
+            @if (User.IsInRole("Admin")
+                && Model.IsPublished
+                && Model.Status != smart_hostel_management_system.Models.Enums.InvoiceStatus.Paid)
             {
                 <form asp-action="MarkAsPaid" asp-route-id="@Model.Id" method="post" class="d-inline">
                     <button type="submit" class="btn btn-success" onclick="return confirm('Xác nhận đã thu tiền?')">💰 Đã thu tiền</button>

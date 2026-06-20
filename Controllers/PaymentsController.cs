@@ -69,7 +69,7 @@ namespace smart_hostel_management_system.Controllers
             }
 
             provider = provider.Trim().ToUpperInvariant();
-            if (provider is not ("MOMO" or "VNPAY"))
+            if (provider != "VNPAY")
             {
                 return BadRequest();
             }
@@ -104,26 +104,12 @@ namespace smart_hostel_management_system.Controllers
             try
             {
                 var orderInfo = $"Thanh toán hóa đơn {invoice.InvoiceNumber}";
-                PaymentLinkResult result;
-
-                if (provider == "MOMO")
-                {
-                    result = await _gateway.CreateMomoPaymentAsync(
-                        orderId,
-                        decimal.ToInt64(amount),
-                        orderInfo,
-                        BuildAbsoluteUrl(nameof(MomoReturn)),
-                        BuildAbsoluteUrl(nameof(MomoIpn)));
-                }
-                else
-                {
-                    result = _gateway.CreateVnPayPayment(
-                        orderId,
-                        decimal.ToInt64(amount),
-                        orderInfo,
-                        BuildAbsoluteUrl(nameof(VnPayReturn)),
-                        HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1");
-                }
+                var result = _gateway.CreateVnPayPayment(
+                    orderId,
+                    decimal.ToInt64(amount),
+                    orderInfo,
+                    BuildAbsoluteUrl(nameof(VnPayReturn)),
+                    HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1");
 
                 payment.RequestId = result.RequestId;
                 payment.PaymentUrl = result.PaymentUrl;
@@ -187,47 +173,6 @@ namespace smart_hostel_management_system.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> MomoIpn([FromBody] MomoCallback callback)
-        {
-            if (!_gateway.ValidateMomoCallback(callback))
-            {
-                return BadRequest(new { message = "Invalid signature" });
-            }
-
-            var payment = await _context.Payments
-                .Include(p => p.Invoice)
-                .FirstOrDefaultAsync(p => p.ProviderOrderId == callback.OrderId);
-
-            if (payment == null || payment.Amount != callback.Amount)
-            {
-                return NotFound(new { message = "Order not found or invalid amount" });
-            }
-
-            await ApplyGatewayResult(
-                payment,
-                callback.ResultCode == 0,
-                callback.ResultCode.ToString(),
-                callback.TransId.ToString(),
-                callback.Message);
-
-            return Ok(new { message = "Success" });
-        }
-
-        [AllowAnonymous]
-        public IActionResult MomoReturn([FromQuery] MomoCallback callback)
-        {
-            var isValid = _gateway.ValidateMomoCallback(callback);
-            return View("Result", new PaymentResultViewModel
-            {
-                IsValid = isValid,
-                IsSuccessful = isValid && callback.ResultCode == 0,
-                Message = isValid ? callback.Message : "Chữ ký MoMo không hợp lệ.",
-                TransactionCode = callback.TransId == 0 ? null : callback.TransId.ToString()
-            });
-        }
-
-        [AllowAnonymous]
         public async Task<IActionResult> VnPayIpn()
         {
             if (!_gateway.ValidateVnPayCallback(Request.Query))
@@ -269,17 +214,46 @@ namespace smart_hostel_management_system.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult VnPayReturn()
+        public async Task<IActionResult> VnPayReturn()
         {
             var isValid = _gateway.ValidateVnPayCallback(Request.Query);
             var responseCode = Request.Query["vnp_ResponseCode"].ToString();
+            var transactionStatus = Request.Query["vnp_TransactionStatus"].ToString();
+            var isSuccessful = isValid
+                && responseCode == "00"
+                && transactionStatus == "00";
+
+            if (isSuccessful)
+            {
+                var orderId = Request.Query["vnp_TxnRef"].ToString();
+                var payment = await _context.Payments
+                    .Include(p => p.Invoice)
+                    .FirstOrDefaultAsync(p => p.ProviderOrderId == orderId);
+
+                if (payment == null
+                    || !long.TryParse(Request.Query["vnp_Amount"], out var returnedAmount)
+                    || payment.Amount * 100 != returnedAmount)
+                {
+                    isSuccessful = false;
+                }
+                else
+                {
+                    await ApplyGatewayResult(
+                        payment,
+                        true,
+                        responseCode,
+                        Request.Query["vnp_TransactionNo"].ToString(),
+                        "VNPay xác nhận thanh toán qua Return URL");
+                }
+            }
+
             return View("Result", new PaymentResultViewModel
             {
                 IsValid = isValid,
-                IsSuccessful = isValid && responseCode == "00",
+                IsSuccessful = isSuccessful,
                 Message = isValid
-                    ? responseCode == "00"
-                        ? "Giao dịch đã được VNPay tiếp nhận. Hệ thống đang chờ IPN xác nhận."
+                    ? isSuccessful
+                        ? "Thanh toán thành công. Hóa đơn đã được cập nhật."
                         : $"VNPay trả về mã {responseCode}."
                     : "Chữ ký VNPay không hợp lệ.",
                 TransactionCode = Request.Query["vnp_TransactionNo"].ToString()

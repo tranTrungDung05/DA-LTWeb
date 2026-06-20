@@ -1,5 +1,41 @@
-<div class="container py-5">
-    <div class="alert alert-success shadow p-4 text-center">
-        <h2 class="mb-0">CHÀO MỪNG CHỦ TRỌ!</h2>
+@{
+    ViewData["Title"] = "Bảng điều khiển";
+}
+
+<section class="admin-dashboard__hero">
+    <div>
+        <small>KHÔNG GIAN QUẢN TRỊ</small>
+        <h1>Chào mừng trở lại.</h1>
+        <p>Chọn một khu vực để quản lý nhà trọ. Tất cả dữ liệu vận hành, cư dân và tài chính đều nằm trong một nhịp làm việc thống nhất.</p>
     </div>
-</div>
+    <span class="admin-dashboard__pulse" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4v-9.5ZM9 20v-6h6v6" /></svg>
+    </span>
+</section>
+
+<section class="admin-dashboard__grid" aria-label="Các phân hệ quản trị">
+    <a class="admin-module" asp-controller="Room" asp-action="Index">
+        <span class="admin-module__icon"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4v-9.5ZM9 20v-6h6v6" /></svg></span>
+        <strong>Phòng</strong><small>Quản lý trạng thái, giá thuê và thành viên trong từng phòng.</small><b>Mở phân hệ →</b>
+    </a>
+    <a class="admin-module" asp-controller="Tenants" asp-action="Index">
+        <span class="admin-module__icon"><svg viewBox="0 0 24 24"><path d="M16 20v-1.5c0-2-1.8-3.5-4-3.5s-4 1.5-4 3.5V20M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8" /></svg></span>
+        <strong>Cư dân</strong><small>Lưu thông tin người thuê và liên kết tài khoản nhận hóa đơn.</small><b>Mở phân hệ →</b>
+    </a>
+    <a class="admin-module" asp-controller="Contracts" asp-action="Index">
+        <span class="admin-module__icon"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5V3Zm11 0v4h3M8 11h8M8 15h8" /></svg></span>
+        <strong>Hợp đồng</strong><small>Theo dõi thời hạn thuê, phòng và các dịch vụ đi kèm.</small><b>Mở phân hệ →</b>
+    </a>
+    <a class="admin-module" asp-controller="Services" asp-action="Index">
+        <span class="admin-module__icon"><svg viewBox="0 0 24 24"><path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM12 3v3M12 18v3M3 12h3M18 12h3" /></svg></span>
+        <strong>Dịch vụ</strong><small>Cấu hình điện, nước, Internet và đơn giá sử dụng.</small><b>Mở phân hệ →</b>
+    </a>
+    <a class="admin-module" asp-controller="Invoices" asp-action="Index">
+        <span class="admin-module__icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6M9 12h6" /></svg></span>
+        <strong>Hóa đơn</strong><small>Tạo hóa đơn theo tháng, phát hành và xác nhận thanh toán.</small><b>Mở phân hệ →</b>
+    </a>
+    <a class="admin-module" asp-controller="Payments" asp-action="Index">
+        <span class="admin-module__icon"><svg viewBox="0 0 24 24"><path d="M3 6h18v12H3V6Zm0 4h18M7 15h4" /></svg></span>
+        <strong>Giao dịch</strong><small>Đối soát thanh toán VNPay và các giao dịch thủ công.</small><b>Mở phân hệ →</b>
+    </a>
+</section>

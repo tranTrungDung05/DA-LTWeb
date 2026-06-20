@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>smart_hostel_management_system</RootNamespace>
+    <UserSecretsId>18dbaf3f-74b8-4554-badf-4ba35e23147d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

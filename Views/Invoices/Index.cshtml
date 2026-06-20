@@ -1,54 +1,49 @@
 @model IEnumerable<smart_hostel_management_system.Models.Core.Invoice>
-@{
-    ViewData["Title"] = "Quản lý hóa đơn";
-}
 
-<h2 class="mb-3">Quản lý hóa đơn</h2>
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
-
-<div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
-        <thead>
-            <tr>
-                <th>Mã hóa đơn</th>
-                <th>Kỳ</th>
-                <th>Cư dân</th>
-                <th>Phòng</th>
-                <th>Tổng tiền</th>
-                <th>Phát hành</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var invoice in Model)
-            {
-                <tr>
-                    <td>@invoice.InvoiceNumber</td>
-                    <td>@invoice.Month/@invoice.Year</td>
-                    <td>@invoice.Tenant?.FullName</td>
-                    <td>@invoice.Room?.RoomNumber</td>
-                    <td>@invoice.TotalAmount.ToString("N0") đ</td>
-                    <td>@(invoice.IsPublished ? $"Đã phát hành {invoice.PublishedAt:dd/MM/yyyy HH:mm}" : "Bản nháp")</td>
-                    <td class="text-nowrap">
-                        <a asp-action="Details" asp-route-id="@invoice.Id" class="btn btn-sm btn-outline-secondary">Xem</a>
-                        @if (!invoice.IsPublished)
-                        {
-                            <a asp-action="Edit" asp-route-id="@invoice.Id" class="btn btn-sm btn-outline-primary">Nhập dịch vụ</a>
-                            <form asp-action="Publish" asp-route-id="@invoice.Id" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-success">Public</button>
-                            </form>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<div class="d-flex justify-content-between mb-3">
+    <h2>Quản lý Hóa đơn</h2>
+    <form asp-action="GenerateMonthlyInvoices" method="post">
+        <input type="hidden" name="month" value="@DateTime.Now.Month" />
+        <input type="hidden" name="year" value="@DateTime.Now.Year" />
+        <button type="submit" class="btn btn-warning">Tạo hóa đơn tháng @DateTime.Now.Month</button>
+    </form>
 </div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Số HĐ</th>
+            <th>Phòng</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) {
+            <tr>
+                <td>@item.InvoiceNumber</td>
+                <td>@item.Room?.RoomNumber</td>
+                <td>@item.TotalAmount.ToString("N0") VNĐ</td>
+                <td>
+                    <span class="badge @(item.IsPublished ? "bg-info" : "bg-secondary")">@(item.IsPublished ? "Đã phát hành" : "Nháp")</span>
+                    <span class="badge @(item.Status == smart_hostel_management_system.Models.Enums.InvoiceStatus.Paid ? "bg-success" : "bg-danger")">@item.Status</span>
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Xem</a>
+                    @if (!item.IsPublished) {
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Sửa</a>
+                        <form asp-action="Publish" asp-route-id="@item.Id" method="post" class="d-inline">
+                            <button class="btn btn-sm btn-primary">Phát hành</button>
+                        </form>
+                    }
+                    @if (item.IsPublished && item.Status != smart_hostel_management_system.Models.Enums.InvoiceStatus.Paid) {
+                        <form asp-action="MarkAsPaid" asp-route-id="@item.Id" method="post" class="d-inline">
+                            <button class="btn btn-sm btn-success">Đã thu tiền</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

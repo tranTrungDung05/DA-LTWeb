@@ -16,5 +16,6 @@ namespace smart_hostel_management_system.Models.Core
 
         public virtual ICollection<ContractDetail> ContractDetails { get; set; } = new List<ContractDetail>();
         public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+        public virtual ICollection<ContractService> ContractServices { get; set; } = new List<ContractService>();
     }
 }

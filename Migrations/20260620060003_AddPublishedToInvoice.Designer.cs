@@ -4,6 +4,7 @@ using DACS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace smart_hostel_management_system.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260620060003_AddPublishedToInvoice")]
+    partial class AddPublishedToInvoice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -299,33 +302,6 @@ namespace smart_hostel_management_system.Migrations
                     b.ToTable("ContractDetails");
                 });
 
-            modelBuilder.Entity("smart_hostel_management_system.Models.Core.ContractService", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ContractId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PriceAtContract")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ServiceId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContractId");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("ContractServices");
-                });
-
             modelBuilder.Entity("smart_hostel_management_system.Models.Core.Invoice", b =>
                 {
                     b.Property<int>("Id")
@@ -478,10 +454,7 @@ namespace smart_hostel_management_system.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateTimePaidAt")
+                    b.Property<DateTime>("DateTimePaidAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("InvoiceId")
@@ -494,35 +467,12 @@ namespace smart_hostel_management_system.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PaymentUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProviderOrderId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ProviderResponseCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("QrCodeData")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<string>("TransactionCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("InvoiceId");
-
-                    b.HasIndex("ProviderOrderId")
-                        .IsUnique()
-                        .HasFilter("[ProviderOrderId] <> ''");
 
                     b.ToTable("Payments");
                 });
@@ -741,25 +691,6 @@ namespace smart_hostel_management_system.Migrations
                     b.Navigation("Room");
                 });
 
-            modelBuilder.Entity("smart_hostel_management_system.Models.Core.ContractService", b =>
-                {
-                    b.HasOne("smart_hostel_management_system.Models.Core.Contract", "Contract")
-                        .WithMany("ContractServices")
-                        .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("smart_hostel_management_system.Models.Core.Service", "Service")
-                        .WithMany()
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Contract");
-
-                    b.Navigation("Service");
-                });
-
             modelBuilder.Entity("smart_hostel_management_system.Models.Core.Invoice", b =>
                 {
                     b.HasOne("smart_hostel_management_system.Models.Core.Contract", "Contract")
@@ -867,8 +798,6 @@ namespace smart_hostel_management_system.Migrations
             modelBuilder.Entity("smart_hostel_management_system.Models.Core.Contract", b =>
                 {
                     b.Navigation("ContractDetails");
-
-                    b.Navigation("ContractServices");
 
                     b.Navigation("Invoices");
                 });

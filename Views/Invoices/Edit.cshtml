@@ -1,0 +1,164 @@
+@model smart_hostel_management_system.Models.ViewModels.InvoiceEditViewModel
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Sửa hóa đơn: <strong>@Model.InvoiceNumber</strong></h2>
+        </div>
+    </div>
+
+    <!-- Thông tin hóa đơn -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin hóa đơn</h5>
+                    <p><strong>Người thuê:</strong> @Model.TenantName</p>
+                    <p><strong>Phòng:</strong> @Model.RoomNumber</p>
+                    <p><strong>Giá phòng/tháng:</strong> <span class="text-primary">@Model.RoomMonthlyPrice.ToString("N0")</span> VNĐ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Edit" method="post" id="invoiceForm">
+        <input type="hidden" asp-for="Id" />
+        
+        <!-- Ghi chú và ngày hạn -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="MainContent" class="form-label">Ghi chú:</label>
+                <textarea asp-for="MainContent" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label for="DueDate" class="form-label">Ngày hạn thanh toán:</label>
+                <input type="date" asp-for="DueDate" class="form-control" />
+            </div>
+        </div>
+
+        <!-- Bảng dịch vụ -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4>Chi tiết dịch vụ</h4>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tên dịch vụ</th>
+                            <th>Đơn vị</th>
+                            <th class="text-right" style="width: 120px;">Số lượng</th>
+                            <th class="text-right" style="width: 140px;">Đơn giá</th>
+                            <th class="text-right" style="width: 140px;">Cộng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Services.Count; i++)
+                        {
+                            <tr>
+                                <td>@Model.Services[i].ServiceName</td>
+                                <td>@Model.Services[i].Unit</td>
+                                <td class="text-right">
+                                    <input type="hidden" asp-for="Services[i].ServiceId" />
+                                    <input type="number" step="0.1" asp-for="Services[i].Quantity" 
+                                           class="form-control quantity-input text-right" 
+                                           data-index="@i" />
+                                </td>
+                                <td class="text-right">
+                                    <input type="number" step="0.01" asp-for="Services[i].UnitPrice" 
+                                           class="form-control price-input text-right" 
+                                           data-index="@i" />
+                                </td>
+                                <td class="text-right">
+                                    <span class="subtotal" data-index="@i">0</span> VNĐ
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tổng tiền -->
+        <div class="row">
+            <div class="col-md-4 ms-auto">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-8">
+                                <strong>Giá phòng:</strong>
+                            </div>
+                            <div class="col-4 text-right">
+                                <strong id="roomPrice">@Model.RoomMonthlyPrice.ToString("N0")</strong> VNĐ
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-8">
+                                <strong>Dịch vụ:</strong>
+                            </div>
+                            <div class="col-4 text-right">
+                                <strong id="serviceTotal">0</strong> VNĐ
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="row">
+                            <div class="col-8">
+                                <h5>Tổng cộng:</h5>
+                            </div>
+                            <div class="col-4 text-right">
+                                <h5 class="text-danger" id="totalAmount">@Model.RoomMonthlyPrice.ToString("N0")</h5> VNĐ
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nút hành động -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">💾 Cập nhật hóa đơn</button>
+                <a asp-action="Index" class="btn btn-secondary">❌ Hủy</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Script tính tổng động -->
+<script type="text/javascript">
+    const roomPrice = @Model.RoomMonthlyPrice;
+    const serviceCount = @Model.Services.Count;
+
+    function calculateTotals() {
+        let serviceTotal = 0;
+
+        // Tính SubTotal cho từng dịch vụ
+        for (let i = 0; i < serviceCount; i++) {
+            const quantityInput = document.querySelector(`input[name="Services[${i}].Quantity"]`);
+            const priceInput = document.querySelector(`input[name="Services[${i}].UnitPrice"]`);
+            const subtotalSpan = document.querySelector(`.subtotal[data-index="${i}"]`);
+
+            if (quantityInput && priceInput && subtotalSpan) {
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const subtotal = quantity * price;
+
+                subtotalSpan.textContent = subtotal.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+                serviceTotal += subtotal;
+            }
+        }
+
+        // Cập nhật hiển thị tổng dịch vụ và tổng cộng
+        const totalAmount = roomPrice + serviceTotal;
+
+        document.getElementById('serviceTotal').textContent = serviceTotal.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        document.getElementById('totalAmount').textContent = totalAmount.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    // Gắn sự kiện change cho tất cả input
+    document.querySelectorAll('.quantity-input, .price-input').forEach(input => {
+        input.addEventListener('change', calculateTotals);
+        input.addEventListener('keyup', calculateTotals);
+    });
+
+    // Tính toán ban đầu
+    calculateTotals();
+</script>

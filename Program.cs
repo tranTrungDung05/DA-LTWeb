@@ -2,6 +2,8 @@ using DACS.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using smart_hostel_management_system.Models.Core;
+using smart_hostel_management_system.Models.Payments;
+using smart_hostel_management_system.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<PaymentGatewayOptions>(
+    builder.Configuration.GetSection("PaymentGateways"));
+builder.Services.AddScoped<PaymentGatewayService>();
 
 var app = builder.Build();
 

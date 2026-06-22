@@ -1,0 +1,48 @@
+@model smart_hostel_management_system.Models.Core.Payment
+@{
+    ViewData["Title"] = "Thanh toán hóa đơn";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Thanh toán qua @Model.PaymentMethod</h4>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-1">Hóa đơn <strong>@Model.Invoice?.InvoiceNumber</strong></p>
+                    <h3 class="text-danger mb-4">@Model.Amount.ToString("N0") VNĐ</h3>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.PaymentUrl))
+                    {
+                        <img src="@Url.Action("QrCode", "Payments", new { id = Model.Id })"
+                             class="img-fluid border rounded p-2 mb-3"
+                             style="max-width: 280px"
+                             alt="Mã QR thanh toán" />
+
+                        <p class="text-muted">Quét QR hoặc mở cổng thanh toán bên dưới.</p>
+                        <a href="@Model.PaymentUrl"
+                           class="btn btn-success btn-lg"
+                           rel="noopener noreferrer">
+                            Mở @Model.PaymentMethod
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">Chưa tạo được link thanh toán.</div>
+                    }
+
+                    <div class="mt-4">
+                        <a asp-controller="Invoices"
+                           asp-action="Details"
+                           asp-route-id="@Model.InvoiceId"
+                           class="btn btn-outline-secondary">
+                            Quay lại hóa đơn
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

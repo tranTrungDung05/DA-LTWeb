@@ -1,8 +1,219 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Smart Hostel - Quản lý nhà trọ thông minh";
+    ViewData["BodyClass"] = "landing-page";
+    ViewData["IsLandingPage"] = true;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<div class="landing-page__glow" aria-hidden="true"></div>
+
+<header class="landing-nav">
+    <a class="brand" asp-controller="Home" asp-action="Index" aria-label="Smart Hostel - Trang chủ">
+        <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32">
+                <path d="M5 15.2 16 6l11 9.2v11.3a1.5 1.5 0 0 1-1.5 1.5h-19A1.5 1.5 0 0 1 5 26.5V15.2Z" />
+                <path d="M12.2 28v-8.2h7.6V28M10.5 14.7h11" />
+            </svg>
+        </span>
+        <span>Smart Hostel</span>
+    </a>
+
+    <nav class="landing-nav__links" aria-label="Điều hướng chính">
+        <a href="#features">Tính năng</a>
+        <a href="#overview">Tổng quan</a>
+        <a href="#workflow">Quy trình</a>
+    </nav>
+
+    <div class="landing-nav__actions">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="button button--secondary" asp-controller="@(User.IsInRole("Admin") ? "Admin" : "Invoices")"
+               asp-action="@(User.IsInRole("Admin") ? "Index" : "MyInvoices")">Vào hệ thống</a>
+        }
+        else
+        {
+            <a class="landing-nav__login" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+            <a class="button button--light" asp-controller="Account" asp-action="Register">Bắt đầu ngay</a>
+        }
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="hero__copy">
+            <div class="eyebrow"><span></span>Quản lý nhẹ nhàng hơn</div>
+            <h1>Mọi thứ trong nhà trọ.<br><span>Gọn trong một nhịp.</span></h1>
+            <p class="hero__lead">
+                Phòng, cư dân, hợp đồng và hóa đơn được kết nối trong một không gian duy nhất —
+                rõ ràng cho chủ trọ, tiện lợi cho người thuê.
+            </p>
+            <div class="hero__actions">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a class="button button--primary button--large"
+                       asp-controller="@(User.IsInRole("Admin") ? "Admin" : "Invoices")"
+                       asp-action="@(User.IsInRole("Admin") ? "Index" : "MyInvoices")">
+                        Mở bảng điều khiển
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
+                    </a>
+                }
+                else
+                {
+                    <a class="button button--primary button--large" asp-controller="Account" asp-action="Register">
+                        Dùng thử miễn phí
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
+                    </a>
+                    <a class="button button--secondary button--large" asp-controller="Account" asp-action="Login">
+                        Tôi đã có tài khoản
+                    </a>
+                }
+            </div>
+            <div class="hero__note">
+                <span class="hero__avatars" aria-hidden="true"><span>AN</span><span>MK</span><span>TH</span></span>
+                <span><strong>Quản lý tập trung</strong><br>Không còn bảng tính rời rạc</span>
+            </div>
+        </div>
+
+        <div class="hero__visual" id="overview">
+            <div class="dashboard">
+                <div class="dashboard__sidebar" aria-hidden="true">
+                    <span class="dashboard__mini-logo">
+                        <svg viewBox="0 0 32 32">
+                            <path d="M5 15.2 16 6l11 9.2v11.3a1.5 1.5 0 0 1-1.5 1.5h-19A1.5 1.5 0 0 1 5 26.5V15.2Z" />
+                            <path d="M12.2 28v-8.2h7.6V28M10.5 14.7h11" />
+                        </svg>
+                    </span>
+                    <span class="dashboard__nav-icon is-active"></span>
+                    <span class="dashboard__nav-icon"></span>
+                    <span class="dashboard__nav-icon"></span>
+                    <span class="dashboard__nav-icon"></span>
+                    <span class="dashboard__avatar">AN</span>
+                </div>
+                <div class="dashboard__content">
+                    <div class="dashboard__topbar">
+                        <div><span class="dashboard__greeting">CHÀO BUỔI SÁNG</span><h2>Tổng quan nhà trọ</h2></div>
+                        <div class="dashboard__top-actions"><span class="dashboard__search"></span><span class="dashboard__profile">Anh Nam</span></div>
+                    </div>
+                    <div class="dashboard__stats">
+                        <article>
+                            <span class="stat-icon stat-icon--green">
+                                <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4v-9.5ZM9 20v-6h6v6" /></svg>
+                            </span>
+                            <div><span>Tổng số phòng</span><strong>24</strong></div><small>+2 tháng này</small>
+                        </article>
+                        <article>
+                            <span class="stat-icon">
+                                <svg viewBox="0 0 24 24"><path d="M16 20v-1.5c0-2-1.8-3.5-4-3.5s-4 1.5-4 3.5V20M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM18 9h4M20 7v4" /></svg>
+                            </span>
+                            <div><span>Đang thuê</span><strong>19</strong></div><small>79% công suất</small>
+                        </article>
+                        <article>
+                            <span class="stat-icon">
+                                <svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h5M8 16h3" /></svg>
+                            </span>
+                            <div><span>Doanh thu tháng</span><strong>58,4tr</strong></div><small class="is-positive">↑ 12,5%</small>
+                        </article>
+                    </div>
+                    <div class="dashboard__panels">
+                        <article class="revenue-card">
+                            <div class="panel-heading">
+                                <div><span>DOANH THU</span><h3>6 tháng gần nhất</h3></div><button type="button">Năm 2026⌄</button>
+                            </div>
+                            <div class="chart" aria-label="Biểu đồ doanh thu minh họa">
+                                <span style="height:38%"></span><span style="height:52%"></span><span style="height:46%"></span>
+                                <span style="height:67%"></span><span style="height:61%"></span><span class="is-current" style="height:86%"></span>
+                            </div>
+                            <div class="chart__labels"><span>T1</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span></div>
+                        </article>
+                        <article class="occupancy-card">
+                            <div class="panel-heading"><div><span>TÌNH TRẠNG</span><h3>Phòng hiện tại</h3></div></div>
+                            <div class="donut"><span><strong>79%</strong><small>đã thuê</small></span></div>
+                            <div class="occupancy-card__legend">
+                                <span><i></i>19 phòng đang thuê</span><span><i></i>5 phòng còn trống</span>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+            <div class="floating-card floating-card--payment">
+                <span class="floating-card__icon"><svg viewBox="0 0 24 24"><path d="M5 12.5 9.5 17 19 7.5" /></svg></span>
+                <span><strong>Thanh toán thành công</strong><small>Phòng 203 · 3.200.000đ</small></span>
+            </div>
+            <div class="floating-card floating-card--room">
+                <span class="room-tag">P.305</span><span><strong>Sắp hết hạn hợp đồng</strong><small>Còn 7 ngày</small></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="section-heading">
+            <div><span class="section-heading__label">MỘT HỆ THỐNG, ĐỦ MỌI VIỆC</span><h2>Quản lý thông minh.<br>Vận hành thảnh thơi.</h2></div>
+            <p>Từ lúc nhận khách đến khi thu tiền, mọi thao tác quan trọng đều rõ ràng, nhanh và liền mạch.</p>
+        </div>
+        <div class="feature-grid">
+            <article class="feature-card feature-card--wide">
+                <span class="feature-card__icon"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4v-9.5ZM9 20v-6h6v6" /></svg></span>
+                <div><span class="feature-card__number">01</span><h3>Nắm trọn tình trạng phòng</h3><p>Biết ngay phòng nào đang thuê, còn trống hay cần xử lý — không cần dò từng trang.</p></div>
+                <div class="room-stack" aria-hidden="true">
+                    <span class="room-stack__item room-stack__item--1"><i></i><b>201</b><small>Đang thuê</small></span>
+                    <span class="room-stack__item room-stack__item--2"><i></i><b>202</b><small>Còn trống</small></span>
+                    <span class="room-stack__item room-stack__item--3"><i></i><b>203</b><small>Đang thuê</small></span>
+                </div>
+            </article>
+            <article class="feature-card">
+                <span class="feature-card__icon"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h5M8 16h3" /></svg></span>
+                <span class="feature-card__number">02</span><h3>Hợp đồng không thất lạc</h3>
+                <p>Lưu trữ thông tin tập trung và chủ động theo dõi thời hạn.</p>
+                <div class="contract-preview" aria-hidden="true"><span></span><span></span><span></span><strong>ĐÃ KÝ</strong></div>
+            </article>
+            <article class="feature-card">
+                <span class="feature-card__icon"><svg viewBox="0 0 24 24"><path d="M4 7h16v12H4zM4 10h16M8 15h4" /></svg></span>
+                <span class="feature-card__number">03</span><h3>Thu tiền, đối soát dễ dàng</h3>
+                <p>Hóa đơn rõ từng khoản, thanh toán trực tuyến và cập nhật trạng thái tức thì.</p>
+                <div class="payment-preview" aria-hidden="true">
+                    <span><i></i>Tiền phòng<strong>2.800.000đ</strong></span><span><i></i>Dịch vụ<strong>400.000đ</strong></span>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="workflow" id="workflow">
+        <div><span class="section-heading__label">BẮT ĐẦU THẬT NHANH</span><h2>Ba bước để nhà trọ<br>chạy đúng nhịp.</h2></div>
+        <ol class="workflow__steps">
+            <li><span>1</span><div><strong>Tạo phòng</strong><small>Thiết lập phòng và giá thuê</small></div></li>
+            <li><span>2</span><div><strong>Thêm cư dân</strong><small>Gắn người thuê với hợp đồng</small></div></li>
+            <li><span>3</span><div><strong>Theo dõi vận hành</strong><small>Quản lý hóa đơn và thanh toán</small></div></li>
+        </ol>
+    </section>
+
+    <section class="final-cta">
+        <div class="final-cta__orb" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M5 15.2 16 6l11 9.2v11.3a1.5 1.5 0 0 1-1.5 1.5h-19A1.5 1.5 0 0 1 5 26.5V15.2Z" /><path d="M12.2 28v-8.2h7.6V28M10.5 14.7h11" /></svg>
+        </div>
+        <span class="section-heading__label">SẴN SÀNG ĐỂ NHẸ VIỆC HƠN?</span>
+        <h2>Để Smart Hostel lo phần rối.<br>Bạn lo phần phát triển.</h2>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="button button--primary button--large" asp-controller="@(User.IsInRole("Admin") ? "Admin" : "Invoices")"
+               asp-action="@(User.IsInRole("Admin") ? "Index" : "MyInvoices")">Mở bảng điều khiển</a>
+        }
+        else
+        {
+            <a class="button button--primary button--large" asp-controller="Account" asp-action="Register">Bắt đầu ngay</a>
+        }
+    </section>
+</main>
+
+<footer class="landing-footer">
+    <a class="brand" asp-controller="Home" asp-action="Index">
+        <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M5 15.2 16 6l11 9.2v11.3a1.5 1.5 0 0 1-1.5 1.5h-19A1.5 1.5 0 0 1 5 26.5V15.2Z" /><path d="M12.2 28v-8.2h7.6V28M10.5 14.7h11" /></svg>
+        </span>
+        <span>Smart Hostel</span>
+    </a>
+    <p>Quản lý nhà trọ thông minh, rõ ràng và liền mạch.</p>
+    <span>© 2026 Smart Hostel</span>
+</footer>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+}

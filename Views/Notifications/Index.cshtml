@@ -1,0 +1,62 @@
+@model IEnumerable<smart_hostel_management_system.Models.Core.Notification>
+@{
+    ViewData["Title"] = "Quản lý Thông báo";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-dark fw-bold">🔔 Hệ Thống Thông Báo</h2>
+        <p class="text-muted mb-0">Quản lý và gửi thông báo đến người thuê trọ</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary px-4 py-2 shadow-sm">+ Tạo thông báo mới</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Ngày Gửi</th>
+                        <th>Tiêu Đề</th>
+                        <th>Nội Dung</th>
+                        <th>Đối Tượng</th>
+                        <th class="text-center pe-4">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted fst-italic py-4">Chưa có thông báo nào.</td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 text-muted">@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="fw-bold">@item.Title</td>
+                            <td>@item.Content</td>
+                            <td>
+                                <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 border border-info border-opacity-25 rounded-pill">
+                                    Tất cả
+                                </span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">🗑️ Xóa</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

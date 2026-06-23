@@ -1,0 +1,28 @@
+@model smart_hostel_management_system.Models.Core.Notification
+@{
+    ViewData["Title"] = "Xóa Thông Báo";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-danger text-white p-3">
+                    <h5 class="mb-0 fw-bold">⚠️ Xác nhận Xóa Thông Báo</h5>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <h5 class="fw-bold mb-3">@Model.Title</h5>
+                    <p class="text-muted mb-4">Bạn có chắc chắn muốn xóa thông báo này khỏi hệ thống không? Hành động này không thể hoàn tác.</p>
+                    
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-center gap-3">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+                            <button type="submit" class="btn btn-danger">Xóa Vĩnh Viễn</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

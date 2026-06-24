@@ -8,7 +8,10 @@
         <h2 class="mb-1 text-dark fw-bold">🔔 Hệ Thống Thông Báo</h2>
         <p class="text-muted mb-0">Quản lý và gửi thông báo đến người thuê trọ</p>
     </div>
-    <a asp-action="Create" class="btn btn-primary px-4 py-2 shadow-sm">+ Tạo thông báo mới</a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary px-4 py-2 shadow-sm">+ Tạo thông báo mới</a>
+    }
 </div>
 
 @if (TempData["Success"] != null)
@@ -29,14 +32,17 @@
                         <th>Tiêu Đề</th>
                         <th>Nội Dung</th>
                         <th>Đối Tượng</th>
-                        <th class="text-center pe-4">Thao Tác</th>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <th class="text-center pe-4">Thao Tác</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="5" class="text-center text-muted fst-italic py-4">Chưa có thông báo nào.</td>
+                            <td colspan="@(User.IsInRole("Admin") ? "5" : "4")" class="text-center text-muted fst-italic py-4">Chưa có thông báo nào.</td>
                         </tr>
                     }
                     @foreach (var item in Model)
@@ -50,9 +56,12 @@
                                     Tất cả
                                 </span>
                             </td>
-                            <td class="text-center pe-4">
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">🗑️ Xóa</a>
-                            </td>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <td class="text-center pe-4">
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">🗑️ Xóa</a>
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>

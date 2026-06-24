@@ -6,7 +6,7 @@ using smart_hostel_management_system.Models.Core;
 
 namespace smart_hostel_management_system.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize] // Bất kỳ ai đăng nhập đều được vào Controller này (để xem)
     public class NotificationsController : Controller
     {
         private readonly AppDbContext _context;
@@ -27,6 +27,7 @@ namespace smart_hostel_management_system.Controllers
         }
 
         // GET: Notifications/Create
+        [Authorize(Roles = "Admin")] // Chỉ Admin mới được mở giao diện Tạo
         public IActionResult Create()
         {
             return View(new Notification());
@@ -35,6 +36,7 @@ namespace smart_hostel_management_system.Controllers
         // POST: Notifications/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")] // Chỉ Admin mới được Submit gửi thông báo
         public async Task<IActionResult> Create(Notification notification)
         {
             if (string.IsNullOrWhiteSpace(notification.Title))
@@ -60,6 +62,7 @@ namespace smart_hostel_management_system.Controllers
         }
 
         // GET: Notifications/Delete/5
+        [Authorize(Roles = "Admin")] // Chỉ Admin mới được mở giao diện Xóa
         public async Task<IActionResult> Delete(int id)
         {
             var notification = await _context.Notifications
@@ -71,6 +74,7 @@ namespace smart_hostel_management_system.Controllers
         // POST: Notifications/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")] // Chỉ Admin mới được Xác nhận xóa
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var notification = await _context.Notifications.FindAsync(id);
